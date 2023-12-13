@@ -36,6 +36,7 @@ import android.widget.TextView;
 import org.orbtv.mockdialservice.IMockDialService;
 import org.orbtv.mockdialservice.IMockDialServiceCallback;
 import org.orbtv.orblibrary.IOrbSession;
+import org.orbtv.orblibrary.OrbSession;
 import org.orbtv.orblibrary.OrbSessionFactory;
 
 import java.text.SimpleDateFormat;
@@ -141,7 +142,12 @@ public class MainActivity extends Activity {
                 consoleLog(message);
             }
         });
-        mMockCallback.registerVoiceReceiver();
+        mTvBrowserSession.setConsoleCallback(new OrbSession.ConsoleCallback() {
+            public void log(String message) {
+                consoleLog(message);
+            }
+        });
+        mTvBrowserSession.registerVoiceReceiver();
     }
 
     @Override
@@ -165,7 +171,7 @@ public class MainActivity extends Activity {
         super.onDestroy();
         unbindDialService();
         unbindVoiceRecognitionService();
-        mMockCallback.unregisterVoiceReceiver();
+        mTvBrowserSession.unregisterVoiceReceiver();
     }
 
     private final IMockDialServiceCallback.Stub mDialServiceCallback =

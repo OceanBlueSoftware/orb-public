@@ -5,7 +5,7 @@
  * the top level of this repository.
  */
 
-package org.orbtv.mockorbapp;
+package org.orbtv.orblibrary;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
