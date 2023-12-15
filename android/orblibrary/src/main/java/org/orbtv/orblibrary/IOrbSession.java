@@ -659,7 +659,7 @@ public interface IOrbSession {
      *
      * @return true if this event has been handled, and false if not
      */
-    default boolean onRequestMediaDescription() {
+    default boolean onVoiceRequestDescription() {
         throw new UnsupportedOperationException("Unsupported 204 API.");
     }
 
@@ -671,7 +671,7 @@ public interface IOrbSession {
      * @param input The content of the text
      * @return true if this event has been handled, and false if not
      */
-    default boolean onRequestTextInput(String input) {
+    default boolean onVoiceRequestTextInput(String input) {
         throw new UnsupportedOperationException("Unsupported 204 API.");
     }
 
@@ -690,7 +690,7 @@ public interface IOrbSession {
      * @param offset The number value for the time position, a number of seconds
      * @return true if this event has been handled, and false if not
      */
-    default boolean onSendIntentByVoiceCommand(Integer action, String info, String anchor, int offset) {
+    default boolean onVoiceSendIntent(Integer action, String info, String anchor, int offset) {
         throw new UnsupportedOperationException("Unsupported 204 API.");
     }
 
@@ -701,7 +701,7 @@ public interface IOrbSession {
      *
      * @param action The index number of the intent, either pressing a button or showing a log
      */
-    default boolean onSendKeyPressAction(Integer action) {
+    default boolean onVoiceSendKeyAction(Integer action) {
         throw new UnsupportedOperationException("Unsupported 204 API.");
     }
 }

@@ -1225,13 +1225,13 @@ public class OrbSession implements IOrbSession {
      * Request for the Description of the current media playback on the application
      */
     @Override
-    public boolean onRequestMediaDescription() {
+    public boolean onVoiceRequestDescription() {
         if (mOrbHbbTVVersion < 204) {
             throw new UnsupportedOperationException("Unsupported 204 API.");
         }
 
         consoleLog("Request for the information of media playing...");
-        mJsonRpc.onRequestMediaDescription();
+        mJsonRpc.onVoiceRequestDescription();
         return true;
     }
 
@@ -1274,11 +1274,11 @@ public class OrbSession implements IOrbSession {
             case INTENT_SEARCH:
             case INTENT_DISPLAY:
             case INTENT_PLAYBACK:
-                return onSendIntentByVoiceCommand(action, info, anchor, offset);
+                return onVoiceSendIntent(action, info, anchor, offset);
             case ACT_REQUEST_MEDIA_DESCRIPTION:
-                return onRequestMediaDescription();
+                return onVoiceRequestDescription();
             case ACT_REQUEST_TEXT_INPUT:
-                return onRequestTextInput(info);
+                return onVoiceRequestTextInput(info);
             case LOG_MESSAGE:
             case LOG_ERROR_NONE_ACTION:
             case LOG_ERROR_MULTI_ACTIONS:
@@ -1286,7 +1286,7 @@ public class OrbSession implements IOrbSession {
                 consoleLog(info);
                 return true;
             default:
-                return onSendKeyPressAction(action);
+                return onVoiceSendKeyAction(action);
         }
     }
 
@@ -1307,8 +1307,8 @@ public class OrbSession implements IOrbSession {
      * @return true if this event has been handled, and false if not
      */
     @Override
-    public boolean onSendIntentByVoiceCommand(Integer action, String info, String anchor,
-                                              int offset) {
+    public boolean onVoiceSendIntent(Integer action, String info, String anchor,
+                                     int offset) {
         if (mOrbHbbTVVersion < 204) {
             throw new UnsupportedOperationException("Unsupported 204 API.");
         }
@@ -1381,7 +1381,7 @@ public class OrbSession implements IOrbSession {
      * @param action The index number of the intent, either pressing a button or showing a log
      */
     @Override
-    public boolean onSendKeyPressAction(Integer action) {
+    public boolean onVoiceSendKeyAction(Integer action) {
         if (mOrbHbbTVVersion < 204) {
             throw new UnsupportedOperationException("Unsupported 204 API.");
         }
@@ -1454,7 +1454,7 @@ public class OrbSession implements IOrbSession {
      * @return true if this event has been handled, and false if not
      */
     @Override
-    public boolean onRequestTextInput(String input) {
+    public boolean onVoiceRequestTextInput(String input) {
         if (mOrbHbbTVVersion < 204) {
             throw new UnsupportedOperationException("Unsupported 204 API.");
         }
