@@ -1221,7 +1221,7 @@ public class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Request for the Description of the current media playback on the application
      */
     @Override
@@ -1235,61 +1235,25 @@ public class OrbSession implements IOrbSession {
         return true;
     }
 
-    private void consoleLog(String log) {
-        if (mConsoleCallback != null) {
-            mConsoleCallback.log(log);
-        }
-    }
-
     /**
      * @since 204
      *
-     * Sends voice commands based on provided actions, messages, anchors, and offsets, where some of the parameters are optional.
+     * Request to deliver a text input, from voice command, to applications
      *
-     * @param action The predefined index number of the intent, from intent.media.pause to intent.playback
-     * @param info   The value uniquely identifying a piece of content:
-     *               - INTENT_MEDIA_SEEK_WALLCLOCK: a wall clock time
-     *               - INTENT_DISPLAY: a URI
-     *               - INTENT_SEARCH: a search term specified by the user.
-     *               - INTENT_PLAYBACK: a URI
-     * @param anchor The value indicates an anchor point of the content...
-     * @param offset The number value for the time position, a number of seconds
-     * @return True if the command is successfully executed; otherwise, handles appropriately.
+     * @param input The content of the text
+     * @return true if this event has been handled, and false if not
      */
-    public boolean sendVoiceCommand(Integer action, String info, String anchor, int offset) {
+    @Override
+    public boolean onVoiceRequestTextInput(String input) {
         if (mOrbHbbTVVersion < 204) {
             throw new UnsupportedOperationException("Unsupported 204 API.");
         }
 
-        switch (action) {
-            case INTENT_MEDIA_PAUSE:
-            case INTENT_MEDIA_PLAY:
-            case INTENT_MEDIA_FAST_FORWARD:
-            case INTENT_MEDIA_FAST_REVERSE:
-            case INTENT_MEDIA_STOP:
-            case INTENT_MEDIA_SEEK_CONTENT:
-            case INTENT_MEDIA_SEEK_RELATIVE:
-            case INTENT_MEDIA_SEEK_LIVE:
-            case INTENT_MEDIA_SEEK_WALLCLOCK:
-            case INTENT_SEARCH:
-            case INTENT_DISPLAY:
-            case INTENT_PLAYBACK:
-                return onVoiceSendIntent(action, info, anchor, offset);
-            case ACT_REQUEST_MEDIA_DESCRIPTION:
-                return onVoiceRequestDescription();
-            case ACT_REQUEST_TEXT_INPUT:
-                return onVoiceRequestTextInput(info);
-            case LOG_MESSAGE:
-            case LOG_ERROR_NONE_ACTION:
-            case LOG_ERROR_MULTI_ACTIONS:
-            case LOG_ERROR_INTENT_SEND:
-                consoleLog(info);
-                return true;
-            default:
-                return onVoiceSendKeyAction(action);
-        }
+        // Mock function to display the input text
+        dispatchTextInput(input);
+        consoleLog("Enter text {" + input + "}");
+        return true;
     }
-
 
     /**
      * @since 204
@@ -1376,7 +1340,7 @@ public class OrbSession implements IOrbSession {
     /**
      * @since 204
      *
-     * Called to send a send a key press event, from a voice command, to the application
+     * Called to send a send a keyUp event, from a voice command, to the application, potentially dispatching the event and show a message on window log.
      *
      * @param action The index number of the intent, either pressing a button or showing a log
      */
@@ -1386,6 +1350,12 @@ public class OrbSession implements IOrbSession {
             throw new UnsupportedOperationException("Unsupported 204 API.");
         }
 
+        String buttonName = ACT_BUTTON_NAMES.getOrDefault(action, "invalid");
+        if (buttonName.equals("invalid")) {
+            return false;
+        }
+        consoleLog("Press " + buttonName + " button");
+        int keyCode;
         switch (action) {
             case ACT_PRESS_BUTTON_NUMB_ZERO:
             case ACT_PRESS_BUTTON_NUMB_ONE:
@@ -1397,89 +1367,97 @@ public class OrbSession implements IOrbSession {
             case ACT_PRESS_BUTTON_NUMB_SEVEN:
             case ACT_PRESS_BUTTON_NUMB_EIGHT:
             case ACT_PRESS_BUTTON_NUMB_NINE:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_0 + action - ACT_PRESS_BUTTON_NUMB_ZERO, action);
+                keyCode = KeyEvent.KEYCODE_0 + action - ACT_PRESS_BUTTON_NUMB_ZERO;
+                break;
             case ACT_PRESS_BUTTON_RED:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_PROG_RED, action);
+                keyCode = KeyEvent.KEYCODE_PROG_RED;
+                break;
             case ACT_PRESS_BUTTON_GREEN:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_PROG_GREEN, action);
+                keyCode = KeyEvent.KEYCODE_PROG_GREEN;
+                break;
             case ACT_PRESS_BUTTON_YELLOW:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_PROG_YELLOW, action);
+                keyCode = KeyEvent.KEYCODE_PROG_YELLOW;
+                break;
             case ACT_PRESS_BUTTON_BLUE:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_PROG_BLUE, action);
+                keyCode = KeyEvent.KEYCODE_PROG_BLUE;
+                break;
             case ACT_PRESS_BUTTON_UP:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_DPAD_UP, action);
+                keyCode = KeyEvent.KEYCODE_DPAD_UP;
+                break;
             case ACT_PRESS_BUTTON_DOWN:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_DPAD_DOWN, action);
+                keyCode = KeyEvent.KEYCODE_DPAD_DOWN;
+                break;
             case ACT_PRESS_BUTTON_LEFT:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_DPAD_LEFT, action);
+                keyCode = KeyEvent.KEYCODE_DPAD_LEFT;
+                break;
             case ACT_PRESS_BUTTON_RIGHT:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_DPAD_RIGHT, action);
+                keyCode = KeyEvent.KEYCODE_DPAD_RIGHT;
+                break;
             case ACT_PRESS_BUTTON_ENTER:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_ENTER, action);
+                keyCode = KeyEvent.KEYCODE_ENTER;
+                break;
             case ACT_PRESS_BUTTON_BACK:
-                return dispatchKeyPressEvent(KeyEvent.KEYCODE_DEL, action);
+                keyCode = KeyEvent.KEYCODE_DEL;
+                break;
+            default:
+                return false;
         }
-        return false;
-    }
-
-    /**
-     * @since 204
-     *
-     * Dispatch a keyUp event and show a message on window log
-     *
-     * @param keyCode The index number of the keyCode
-     * @param action  The index number of actions for pressing a certain button
-     * @return True if the key event is dispatched successfully; otherwise, false
-     */
-    private boolean dispatchKeyPressEvent(int keyCode, int action) {
-        if (mOrbHbbTVVersion < 204) {
-            throw new UnsupportedOperationException("Unsupported 204 API.");
-        }
-
-        String buttonName = ACT_BUTTON_NAMES.getOrDefault(action, "invalid");
-        if (buttonName.equals("invalid")) {
-            return false;
-        }
-        consoleLog("Press " + buttonName + " button");
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
-        return notifyKeyUp(KEY_PRESS_EVENT, event);
+        return dispatchKeyEvent(event);
+    }
+
+    private void consoleLog(String log) {
+        if (mConsoleCallback != null) {
+            mConsoleCallback.log(log);
+        }
     }
 
     /**
      * @since 204
      *
-     * Request to deliver a text input, from voice command, to applications
+     * Sends voice commands based on provided actions, messages, anchors, and offsets, where some of the parameters are optional.
      *
-     * @param input The content of the text
-     * @return true if this event has been handled, and false if not
+     * @param action The predefined index number of the intent, from intent.media.pause to intent.playback
+     * @param info   The value uniquely identifying a piece of content:
+     *               - INTENT_MEDIA_SEEK_WALLCLOCK: a wall clock time
+     *               - INTENT_DISPLAY: a URI
+     *               - INTENT_SEARCH: a search term specified by the user.
+     *               - INTENT_PLAYBACK: a URI
+     * @param anchor The value indicates an anchor point of the content...
+     * @param offset The number value for the time position, a number of seconds
+     * @return True if the command is successfully executed; otherwise, handles appropriately.
      */
-    @Override
-    public boolean onVoiceRequestTextInput(String input) {
+    private boolean sendVoiceCommand(Integer action, String info, String anchor, int offset) {
         if (mOrbHbbTVVersion < 204) {
             throw new UnsupportedOperationException("Unsupported 204 API.");
         }
 
-        // Mock function to display the input text
-        dispatchTextInput(input);
-        consoleLog("Enter text {" + input + "}");
-        return true;
-    }
-
-    /**
-     * Notifies the occurrence of a keyUp event, potentially dispatching the event.
-     *
-     * @param keyCode The index number of the keyCode
-     * @param event   The KeyEvent instance representing the key event
-     * @return True if the key event is successfully dispatched; otherwise, false
-     */
-    private boolean notifyKeyUp(int keyCode, KeyEvent event) {
-        if (mOrbHbbTVVersion < 204) {
-            throw new UnsupportedOperationException("Unsupported 204 API.");
+        switch (action) {
+            case INTENT_MEDIA_PAUSE:
+            case INTENT_MEDIA_PLAY:
+            case INTENT_MEDIA_FAST_FORWARD:
+            case INTENT_MEDIA_FAST_REVERSE:
+            case INTENT_MEDIA_STOP:
+            case INTENT_MEDIA_SEEK_CONTENT:
+            case INTENT_MEDIA_SEEK_RELATIVE:
+            case INTENT_MEDIA_SEEK_LIVE:
+            case INTENT_MEDIA_SEEK_WALLCLOCK:
+            case INTENT_SEARCH:
+            case INTENT_DISPLAY:
+            case INTENT_PLAYBACK:
+                return onVoiceSendIntent(action, info, anchor, offset);
+            case ACT_REQUEST_MEDIA_DESCRIPTION:
+                return onVoiceRequestDescription();
+            case ACT_REQUEST_TEXT_INPUT:
+                return onVoiceRequestTextInput(info);
+            case LOG_MESSAGE:
+            case LOG_ERROR_NONE_ACTION:
+            case LOG_ERROR_MULTI_ACTIONS:
+            case LOG_ERROR_INTENT_SEND:
+                consoleLog(info);
+                return true;
+            default:
+                return onVoiceSendKeyAction(action);
         }
-
-        if (keyCode == KEY_PRESS_EVENT) {
-            return dispatchKeyEvent(event);
-        }
-        return false;
     }
 }
