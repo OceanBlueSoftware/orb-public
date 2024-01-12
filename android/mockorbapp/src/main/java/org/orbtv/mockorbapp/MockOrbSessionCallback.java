@@ -1600,11 +1600,21 @@ public class MockOrbSessionCallback implements IOrbSessionCallback {
         String requestedValue = (dialogueEnhancementGain == EMPTY_INTEGER) ?
                 "" : ", gain: " + dialogueEnhancementGain;
         consoleLog("Request dialogue enhancement override" + requestedValue);
+        // check the feature that is supported
+        SupportType type = MOCK_SUPPORT_TYPES.getOrDefault(F_DIALOGUE_ENHANCEMENT, SupportType.notSupported);
+        if (type == SupportType.notSupported) {
+            consoleLog("Not supported Dialogue Enhancement");
+            mSession.onRespondError(connection, id, -24, "Dialogue Enhancement override failed");
+            return;
+        }
 
         int appliedGain;
         if (dialogueEnhancementGain == EMPTY_INTEGER) {
             // If the value is not specified, it shall be reset to the user preference.
             appliedGain = MOCK_DIALOGUE_ENHANCEMENT_GAIN_PREFERENCE;
+        } else if (dialogueEnhancementGain == 0) {
+            MOCK_ENABLE_STATUS.put(F_DIALOGUE_ENHANCEMENT, false);
+            appliedGain = MOCK_DIALOGUE_ENHANCEMENT_GAIN;
         } else if (dialogueEnhancementGain >= MOCK_DIALOGUE_ENHANCEMENT_GAIN_LIMIT_MAX) {
             // If the value is is outside the allowed value range,
             // it shall be restricted in the allowed range.
@@ -1632,6 +1642,14 @@ public class MockOrbSessionCallback implements IOrbSessionCallback {
     public void onRequestTriggerResponseToUserAction(int connection, String id, String magnitude) {
         MOCK_RESPONSE_TO_A_USER_ACTION_MAGNITUDE = magnitude;
         consoleLog("Request to trigger response to user action, magnitude: " + magnitude);
+        // check the feature is enabled
+        boolean isEnabled = Boolean.TRUE.equals(MOCK_ENABLE_STATUS.get(F_RESPONSE_TO_A_USER_ACTION));
+        if (!isEnabled) {
+            consoleLog("Response to User Action is not enabled");
+            mSession.onRespondError(connection, id, -25, "Response to User Action failed");
+            return;
+        }
+
         // If the requested is successfully performed by the terminal,
         // it shall reply with a non-error response, where the actioned field shall be set to true;
         boolean actioned = true;
@@ -1681,6 +1699,13 @@ public class MockOrbSessionCallback implements IOrbSessionCallback {
         }
         String featureName = FEATURES[featureId];
         consoleLog("Request feature settings query for " + featureName);
+        // check the feature is supported
+        SupportType type = MOCK_SUPPORT_TYPES.getOrDefault(featureId, SupportType.notSupported);
+        if (type == SupportType.notSupported || type == SupportType.supportedNoSetting) {
+            consoleLog("Not supported feature: " + featureName);
+            mSession.onRespondError(connection, id, -23, "Invalid accessibility settings query");
+            return;
+        }
 
         Boolean isEnabled = MOCK_ENABLE_STATUS.get(featureId);
         if (isEnabled == null) {
@@ -2069,18 +2094,12 @@ public class MockOrbSessionCallback implements IOrbSessionCallback {
     }
 
     private void querySettingDialogueEnhancement(int connection, String id, boolean isEnabled) {
-        if (isEnabled) {
-            mSession.onQueryDialogueEnhancement(connection, id,
-                    MOCK_DIALOGUE_ENHANCEMENT_GAIN_PREFERENCE, MOCK_DIALOGUE_ENHANCEMENT_GAIN,
-                    MOCK_DIALOGUE_ENHANCEMENT_GAIN_LIMIT_MIN,
-                    MOCK_DIALOGUE_ENHANCEMENT_GAIN_LIMIT_MAX);
-        } else {
-            // If DE is switched off, dialogueEnhancementGain shall be set to 0.
-            mSession.onQueryDialogueEnhancement(connection, id,
-                    MOCK_DIALOGUE_ENHANCEMENT_GAIN_PREFERENCE, 0,
-                    MOCK_DIALOGUE_ENHANCEMENT_GAIN_LIMIT_MIN,
-                    MOCK_DIALOGUE_ENHANCEMENT_GAIN_LIMIT_MAX);
-        }
+        // If DE is switched off, dialogueEnhancementGain shall be set to 0.
+        int gain = isEnabled ? MOCK_DIALOGUE_ENHANCEMENT_GAIN : 0;
+        mSession.onQueryDialogueEnhancement(connection, id,
+                MOCK_DIALOGUE_ENHANCEMENT_GAIN_PREFERENCE, gain,
+                MOCK_DIALOGUE_ENHANCEMENT_GAIN_LIMIT_MIN,
+                MOCK_DIALOGUE_ENHANCEMENT_GAIN_LIMIT_MAX);
     }
 
     private void querySettingsUiMagnifier(int connection, String id, boolean isEnabled) {
