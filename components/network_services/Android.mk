@@ -2,13 +2,13 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
 # Use jsoncpp_ORB or otherwise use default jsoncpp from source tree
-USE_JSONCPP_ORB ?= 1
+USE_JSONCPP_ORB ?= 0
 
 # Current jsoncpp version is 1.9.4 or above
-JSONCPP_VERSION_1_9_4 ?= 1
+JSONCPP_VERSION_1_9_4 ?= 0
 
 # Support libwebsockets version 4.0 and above
-LWS_VERSION_4 ?= 1
+LWS_VERSION_4 ?= 0
 
 LOCAL_MODULE := liborg.orbtv.orblibrary.networkservices
 
