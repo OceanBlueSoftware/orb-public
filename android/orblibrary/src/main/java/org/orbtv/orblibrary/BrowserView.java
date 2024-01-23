@@ -21,6 +21,7 @@ import android.graphics.Color;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
@@ -118,6 +119,13 @@ class BrowserView extends WebView {
         });
 
         setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                Log.i(TAG, consoleMessage.message() + " -- From line " +
+                        consoleMessage.lineNumber() + " of " + consoleMessage.sourceId());
+                return true;
+            }
+            
             @Override
             public void onPermissionRequest(PermissionRequest request) {
                 Log.d(TAG, "Received permission request for resources: "
@@ -366,9 +374,5 @@ class BrowserView extends WebView {
          * @param url The URL of the new page.
          */
         void notifyApplicationPageChanged(int appId, String url);
-    }
-
-    static {
-        WebView.setWebContentsDebuggingEnabled(true);
     }
 }
