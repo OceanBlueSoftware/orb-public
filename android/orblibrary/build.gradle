@@ -33,12 +33,6 @@ android {
         prefab true
     }
 
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
-        }
-    }
-
     ndkVersion '21.4.7075529'
 }
 
