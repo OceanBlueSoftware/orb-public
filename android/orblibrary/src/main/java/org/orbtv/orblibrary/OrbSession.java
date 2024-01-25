@@ -1210,6 +1210,56 @@ class OrbSession implements IOrbSession {
     /**
      * @since 204
      *
+     * Sends voice commands based on provided actions, messages, anchors, and offsets, where some of the parameters are optional.
+     *
+     * @param action The predefined index number of the intent, from intent.media.pause to intent.playback
+     * @param info   The value uniquely identifying a piece of content:
+     *               - INTENT_MEDIA_SEEK_WALLCLOCK: a wall clock time
+     *               - INTENT_DISPLAY: a URI
+     *               - INTENT_SEARCH: a search term specified by the user.
+     *               - INTENT_PLAYBACK: a URI
+     * @param anchor The value indicates an anchor point of the content...
+     * @param offset The number value for the time position, a number of seconds
+     * @return True if the command is successfully executed; otherwise, handles appropriately.
+     */
+    @Override
+    public boolean sendVoiceCommand(Integer action, String info, String anchor, int offset) {
+        if (mOrbHbbTVVersion < 204) {
+            throw new UnsupportedOperationException("Unsupported 204 API.");
+        }
+
+        switch (action) {
+            case INTENT_MEDIA_PAUSE:
+            case INTENT_MEDIA_PLAY:
+            case INTENT_MEDIA_FAST_FORWARD:
+            case INTENT_MEDIA_FAST_REVERSE:
+            case INTENT_MEDIA_STOP:
+            case INTENT_MEDIA_SEEK_CONTENT:
+            case INTENT_MEDIA_SEEK_RELATIVE:
+            case INTENT_MEDIA_SEEK_LIVE:
+            case INTENT_MEDIA_SEEK_WALLCLOCK:
+            case INTENT_SEARCH:
+            case INTENT_DISPLAY:
+            case INTENT_PLAYBACK:
+                return onVoiceSendIntent(action, info, anchor, offset);
+            case ACT_REQUEST_MEDIA_DESCRIPTION:
+                return onVoiceRequestDescription();
+            case ACT_REQUEST_TEXT_INPUT:
+                return onVoiceRequestTextInput(info);
+            case LOG_MESSAGE:
+            case LOG_ERROR_NONE_ACTION:
+            case LOG_ERROR_MULTI_ACTIONS:
+            case LOG_ERROR_INTENT_SEND:
+                mOrbSessionCallback.consoleLog(info);
+                return true;
+            default:
+                return onVoiceSendKeyAction(action);
+        }
+    }
+
+    /**
+     * @since 204
+     *
      * Request for the Description of the current media playback on the application
      */
     @Override
@@ -1392,55 +1442,5 @@ class OrbSession implements IOrbSession {
         }
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_UP, keyCode);
         return dispatchKeyEvent(event);
-    }
-
-    /**
-     * @since 204
-     *
-     * Sends voice commands based on provided actions, messages, anchors, and offsets, where some of the parameters are optional.
-     *
-     * @param action The predefined index number of the intent, from intent.media.pause to intent.playback
-     * @param info   The value uniquely identifying a piece of content:
-     *               - INTENT_MEDIA_SEEK_WALLCLOCK: a wall clock time
-     *               - INTENT_DISPLAY: a URI
-     *               - INTENT_SEARCH: a search term specified by the user.
-     *               - INTENT_PLAYBACK: a URI
-     * @param anchor The value indicates an anchor point of the content...
-     * @param offset The number value for the time position, a number of seconds
-     * @return True if the command is successfully executed; otherwise, handles appropriately.
-     */
-    @Override
-    public boolean sendVoiceCommand(Integer action, String info, String anchor, int offset) {
-        if (mOrbHbbTVVersion < 204) {
-            throw new UnsupportedOperationException("Unsupported 204 API.");
-        }
-
-        switch (action) {
-            case INTENT_MEDIA_PAUSE:
-            case INTENT_MEDIA_PLAY:
-            case INTENT_MEDIA_FAST_FORWARD:
-            case INTENT_MEDIA_FAST_REVERSE:
-            case INTENT_MEDIA_STOP:
-            case INTENT_MEDIA_SEEK_CONTENT:
-            case INTENT_MEDIA_SEEK_RELATIVE:
-            case INTENT_MEDIA_SEEK_LIVE:
-            case INTENT_MEDIA_SEEK_WALLCLOCK:
-            case INTENT_SEARCH:
-            case INTENT_DISPLAY:
-            case INTENT_PLAYBACK:
-                return onVoiceSendIntent(action, info, anchor, offset);
-            case ACT_REQUEST_MEDIA_DESCRIPTION:
-                return onVoiceRequestDescription();
-            case ACT_REQUEST_TEXT_INPUT:
-                return onVoiceRequestTextInput(info);
-            case LOG_MESSAGE:
-            case LOG_ERROR_NONE_ACTION:
-            case LOG_ERROR_MULTI_ACTIONS:
-            case LOG_ERROR_INTENT_SEND:
-                mOrbSessionCallback.consoleLog(info);
-                return true;
-            default:
-                return onVoiceSendKeyAction(action);
-        }
     }
 }
