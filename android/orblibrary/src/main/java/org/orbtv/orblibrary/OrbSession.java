@@ -1409,6 +1409,7 @@ class OrbSession implements IOrbSession {
      * @param offset The number value for the time position, a number of seconds
      * @return True if the command is successfully executed; otherwise, handles appropriately.
      */
+    @Override
     public boolean sendVoiceCommand(Integer action, String info, String anchor, int offset) {
         if (mOrbHbbTVVersion < 204) {
             throw new UnsupportedOperationException("Unsupported 204 API.");
