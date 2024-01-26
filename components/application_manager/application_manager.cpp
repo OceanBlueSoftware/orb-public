@@ -1140,6 +1140,31 @@ uint32_t ApplicationManager::GetOrganizationId()
     return m_app.orgId;
 }
 
+/**
+ * Provide access to the component tag of AIT_PROTOCOL_OBJECT_CAROUSEL transport
+ *
+ * @return uint8_t the component tag
+ */
+uint8_t ApplicationManager::GetComponentTag() 
+{
+    uint8_t componentTag = 0;
+    
+    auto ait = m_ait.Get();
+    if (ait != nullptr)
+    {
+        const Ait::S_AIT_APP_DESC *app = Ait::FindApp(ait, m_app.orgId, m_app.appId);
+        int i;
+        for (i = 0; i < app->numTransports; i++)
+        {
+            if (app->transportArray[i].protocolId == AIT_PROTOCOL_OBJECT_CAROUSEL)
+            {
+            componentTag = app->transportArray[i].oc.componentTag;
+            }
+        }
+    }
+    return componentTag;
+}
+
 static bool IsKeyNavigation(uint16_t code)
 {
     return code == VK_UP ||

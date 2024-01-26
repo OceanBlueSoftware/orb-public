@@ -236,6 +236,13 @@ public:
     uint32_t GetOrganizationId();
 
     /**
+     * Provide access to the component tag of AIT_PROTOCOL_OBJECT_CAROUSEL transport
+     *
+     * @return uint8_t the component tag
+     */
+    uint8_t GetComponentTag();
+
+    /**
      * Get the names of the current app.
      *
      * @return The current app names as a map of <lang,name> pairs

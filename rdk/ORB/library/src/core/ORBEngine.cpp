@@ -57,6 +57,20 @@ bool ResolveObjectAndMethod(std::string input, std::string& object, std::string&
 }
 
 /**
+ * Transform decimal number to hexadecimal string
+ *
+ * @return the hexadecimal value as a string
+ */
+static
+std::string DecToHex(int decimal)
+{
+    std::stringstream ss;
+    ss<< std::hex << decimal;
+    std::string result ( ss.str() );
+    return result;
+}
+
+/**
  * Check if the given JSON request is a valid ORB bridge request.
  *
  * @param request The JSON request
@@ -296,6 +310,25 @@ void ORBEngine::LoadDvbUrl(std::string url, int requestId)
                                                              ":" +
                                                              port) + uri->GetPath();
         ORB_LOG("Stripped url=%s", url.c_str());
+    }
+
+    if (url.rfind("dvb:/", 0) == 0 && url.rfind("dvb://", 0) == std::string::npos)
+    {
+        std::shared_ptr<Channel> currentChannel = GetORBPlatform()->Broadcast_GetCurrentChannel();
+        uint8_t componentTag = GetApplicationManager()->GetComponentTag();
+        if (componentTag == 0)
+        {
+            return;
+        }
+        
+        url = "dvb://" + 
+            DecToHex(currentChannel->GetOnid()) + "." +
+            DecToHex(currentChannel->GetTsid()) + "." +
+            DecToHex(currentChannel->GetSid()) + "." +
+            DecToHex(componentTag) + 
+            url.substr(4);
+        
+        ORB_LOG("Loading: %s", url.c_str());
     }
 
     GetORBPlatform()->Dsmcc_RequestFile(url, requestId);
