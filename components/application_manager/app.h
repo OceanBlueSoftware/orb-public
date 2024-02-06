@@ -73,6 +73,7 @@ public:
     bool isActivated = true;
     uint16_t id;
     std::vector<Ait::S_APP_PARENTAL_RATING> parentalRatings;
+    std::vector<uint16_t> graphicsConstraints;
     uint8_t versionMinor;
 private:
     std::string m_scheme;

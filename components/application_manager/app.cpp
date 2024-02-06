@@ -69,6 +69,7 @@ App App::CreateAppFromAitDesc(const Ait::S_AIT_APP_DESC *desc,
     app.controlCode = desc->controlCode;
     app.orgId = desc->orgId;
     app.appId = desc->appId;
+    app.graphicsConstraints = desc->graphicsConstraints;
 
     app.keySetMask = 0;
     app.otherKeys = std::vector<uint16_t>();
