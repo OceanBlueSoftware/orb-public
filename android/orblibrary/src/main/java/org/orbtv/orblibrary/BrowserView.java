@@ -49,6 +49,7 @@ class BrowserView extends WebView {
     private WebResourceClient mWebResourceClient;
     private SessionCallback mSessionCallback;
     private JavaScriptBridgeInterface mJavaScriptBridgeInterface;
+    private int mRenderingResolution = 1080;
 
     private int mViewWidth = 0; // Await onLayoutChange to calculate View width
     private int mAppWidth = 1280; // Apps are 1280 by default
@@ -226,6 +227,10 @@ class BrowserView extends WebView {
         removeJavascriptInterface("androidBridge");
         getSettings().setJavaScriptEnabled(false);
         destroy();
+    }
+
+    public int getRenderingResolution() {
+        return mRenderingResolution;
     }
 
     private void updateScale() {

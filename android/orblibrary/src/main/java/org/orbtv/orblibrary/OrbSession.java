@@ -369,6 +369,16 @@ class OrbSession implements IOrbSession {
     }
 
     /**
+     * Get the current resolution supported by the terminal.
+     *
+     * @return An integer value of the rendering resolution.
+     */
+    @Override
+    public int getRenderingResolution() {
+        return mBrowserView.getRenderingResolution();
+    }
+
+    /**
      * Launches a "Broadcast-INDEPENDENT" application, the url could be an XML-AIT file.
      *
      * @param url URL where application is to be found
