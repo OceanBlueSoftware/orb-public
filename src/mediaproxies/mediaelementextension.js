@@ -523,34 +523,6 @@ hbbtv.objects.MediaElementExtension = (function() {
         let _currentTime = 0;
         const thiz = this;
 
-        const _timer = new function() {
-            let _time = null;
-            let _count = 0;
-            this.start = function() {
-                if (!_time) {
-                    _time = Date.now()
-                }
-                console.log('MediaElementExtension: Started media element timer. Current count:', _count);
-            };
-            this.stop = function() {
-                if (_time) {
-                    _count += Date.now() - _time;
-                    _time = null;
-                }
-                console.log('MediaElementExtension: Stopped media element timer. Current count:', _count);
-            };
-            this.restart = function() {
-                _time = Date.now();
-                _count = 0;
-            };
-            this.elapsed = function() {
-                if (_time) {
-                    return (Date.now() - _time + _count) / 1000.0;
-                }
-                return _count / 1000.0;
-            }
-        };
-
         this.startDate = new Date(NaN);
         this.audioTracks = hbbtv.objects.createAudioTrackList(iframeProxy);
         hbbtv.bridge.addWeakEventListener('PreferredAudioLanguageChanged', (e) => {
@@ -576,22 +548,8 @@ hbbtv.objects.MediaElementExtension = (function() {
         this.readyState = mediaOwnProperties.readyState.get.call(parent);
         this.paused = mediaOwnProperties.paused.get.call(parent);
         this.dispatchEvent = function(e) {
-            switch(e.type) {
-                case '__orb_startDateUpdated__':
-                    this.startDate = new Date(typeof e.startDate === 'number' ? e.startDate : NaN);
-                    break;
-                case 'play':
-                    _timer.restart();
-                    break;
-                case 'playing':
-                    _timer.start();
-                    break;
-                case 'waiting':
-                case 'pause':
-                    _timer.stop();
-                    break;
-                default:
-                    break;
+            if (e.type === '__orb_startDateUpdated__') {
+                this.startDate = new Date(typeof e.startDate === 'number' ? e.startDate : NaN);
             }
             parent.dispatchEvent(e);
         };
@@ -647,17 +605,10 @@ hbbtv.objects.MediaElementExtension = (function() {
         });
         Object.defineProperty(this, 'currentTime', {
             set(value) {
-                if (_currentTime !== value) {
-                    _currentTime = value;
-                    if (!(this.paused || this.ended)) {
-                        _timer.restart();
-                    }
-                }
+                _currentTime = value;
             },
             get() {
-                return this.paused || this.ended ?
-                    _currentTime :
-                    _currentTime + _timer.elapsed();
+                return _currentTime;
             },
         });
     }

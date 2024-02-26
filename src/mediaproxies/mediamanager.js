@@ -222,6 +222,7 @@ hbbtv.mediaManager = (function() {
         const audioTracks = hbbtv.objects.createAudioTrackList(mediaProxy);
         const videoTracks = hbbtv.objects.createVideoTrackList(mediaProxy);
         const textTracks = hbbtv.objects.createTextTrackList(media, mediaProxy);
+        let intervalId;
 
         media.setMediaKeys = function(mediaKeys) {
             if (mediaKeys && mediaKeys.mediaKeySystemAccess) {
@@ -420,6 +421,22 @@ hbbtv.mediaManager = (function() {
             mediaProxy.dispatchEvent(MEDIA_PROXY_ID, e)
         );
 
+        function startCurrentTimeWatchdog() {
+            clearInterval(intervalId);
+            intervalId = setInterval(() => {
+                mediaProxy.updateObserverProperties(MEDIA_PROXY_ID, {
+                    currentTime: media.currentTime
+                });
+            }, 20);
+            media.removeEventListener("playing", startCurrentTimeWatchdog);
+        }
+        media.addEventListener("playing", startCurrentTimeWatchdog);
+
+        function stopCurrentTimeWatchdog() {
+            clearInterval(intervalId);
+            media.addEventListener("playing", startCurrentTimeWatchdog);
+        }
+
         // in case of dynamic mpd, update the seekable property based on timeupdate
         // remove the handling after MPD@timeShiftBufferDepth seconds passed, since dash
         // updates the seekable property continuously. Use this in case of rdk.
@@ -438,6 +455,7 @@ hbbtv.mediaManager = (function() {
                 }
             });
         }
+        media.addEventListener('waiting', stopCurrentTimeWatchdog);
 
         media.addEventListener('play', (e) => {
             // some tests ask for the seekable property just after the playing event
@@ -456,6 +474,7 @@ hbbtv.mediaManager = (function() {
             Object.assign(evt, {
                 speed: 0
             });
+            stopCurrentTimeWatchdog();
             mediaProxy.dispatchEvent(MEDIA_PROXY_ID, evt);
             propsUpdateCallback(e);
         });
