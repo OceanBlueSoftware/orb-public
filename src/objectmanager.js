@@ -46,9 +46,16 @@ hbbtv.objectManager = (function() {
             }
         );
         upgradeDescendantObjects(document);
+        console.log("old window.devicePixelRatio");
+        console.log(window.devicePixelRatio);
         defaultDevicePixelRatio = window.devicePixelRatio;
+        console.log("defaultDevicePixelRatio");
+        console.log(defaultDevicePixelRatio);
         graphicPlane = hbbtv.bridge.configuration.getRenderingResolution();
+        console.log(graphicPlane);
         check();
+        console.log(defaultDevicePixelRatio);
+        console.log(window.devicePixelRatio);
     }
 
     function check() {
@@ -139,15 +146,15 @@ hbbtv.objectManager = (function() {
             console.log(newSrcSet); 
             imageElement.setAttribute('srcset', newSrcSet);
 
-            // if (sizesValue == null) {
-            //     console.log("checkkkkkkkkkkkkkkkkkkk");
-            //     // var percentage = (imageFactor * 100) + '%';
-            //     // var style = 'width: ' + percentage + '; height: auto; ';
-            //     var style = 'width: 60%; height: auto; ';
-            //     imageElement.setAttribute('style', style);
-            //     console.log("checkkkkkkkkkkkkkkkkkkk");
-            //     console.log(imageElement.getAttribute('style'));
-            // }
+            if (sizesValue == null) {
+                // console.log("checkkkkkkkkkkkkkkkkkkk");
+                var percentage = (imageFactor * 100) + '%';
+                var style = 'width: ' + percentage + '; height: auto; ';
+                var style = 'width: 50%; height: auto; ';
+                imageElement.setAttribute('style', style);
+                // console.log("checkkkkkkkkkkkkkkkkkkk");
+                console.log(imageElement.getAttribute('style'));
+            }
         }
     }
 
