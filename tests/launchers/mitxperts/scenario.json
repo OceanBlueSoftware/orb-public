@@ -9,7 +9,7 @@
                "id": 10,
                "orgId": 19,
                "name": "HbbTV-Testsuite",
-               "baseUrl": "http://itv.mit-xperts.com/hbbtvtest/",
+               "baseUrl": "http://10.0.2.2:4000/obs/2402_Hbbtv_204_mitxperts_resolutions/mitxp-testsuite/",
                "initialPath": "index.php"
             },
             {

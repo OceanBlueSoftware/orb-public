@@ -24,7 +24,7 @@ hbbtv.objectManager = (function() {
     let objectFactoryMethodTable = [];
     let objectUpgradeHandlers = [];
     let imageFactor = 1;
-    let defaultDevicePixelRatio = -1;
+    // let defaultDevicePixelRatio = -1;
     let graphicPlane = 720;
 
     function initialise() {
@@ -48,19 +48,21 @@ hbbtv.objectManager = (function() {
         upgradeDescendantObjects(document);
         console.log("old window.devicePixelRatio");
         console.log(window.devicePixelRatio);
-        defaultDevicePixelRatio = window.devicePixelRatio;
-        console.log("defaultDevicePixelRatio");
-        console.log(defaultDevicePixelRatio);
+        // defaultDevicePixelRatio = window.devicePixelRatio;
+        // console.log("defaultDevicePixelRatio");
+        // console.log(defaultDevicePixelRatio);
         graphicPlane = hbbtv.bridge.configuration.getRenderingResolution();
         console.log(graphicPlane);
         check();
-        console.log(defaultDevicePixelRatio);
+        // console.log(defaultDevicePixelRatio);
+        console.log("new window.devicePixelRatio");
         console.log(window.devicePixelRatio);
+
     }
 
     function check() {
         Object.defineProperty(window, 'devicePixelRatio', {
-            value: defaultDevicePixelRatio * (graphicPlane / 720.0),
+            value: (graphicPlane / 720.0),
             writable: false
         });
     }
@@ -166,8 +168,8 @@ hbbtv.objectManager = (function() {
     // Mutation observer
     function addMutationIntercept(callbackObjectAdded, callbackObjectRemoved) {
         const observer = new MutationObserver(function(mutationsList) {
-            console.log("defaultDevicePixelRatio");
-            console.log(defaultDevicePixelRatio);
+            // console.log("defaultDevicePixelRatio");
+            // console.log(defaultDevicePixelRatio);
             console.log("window.devicePixelRatio");
             console.log(window.devicePixelRatio);
             imageFactor = 720.0 / graphicPlane;

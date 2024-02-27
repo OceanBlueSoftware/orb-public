@@ -49,7 +49,7 @@ class BrowserView extends WebView {
     private WebResourceClient mWebResourceClient;
     private SessionCallback mSessionCallback;
     private JavaScriptBridgeInterface mJavaScriptBridgeInterface;
-    private int mRenderingResolution = 1080;
+    private int mRenderingResolution = 2160;
 
     private int mViewWidth = 0; // Await onLayoutChange to calculate View width
     private int mAppWidth = 1280; // Apps are 1280 by default
@@ -83,6 +83,7 @@ class BrowserView extends WebView {
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 int width = right - left;
+                Log.d(TAG, "onLayoutChange : width : " + width);
                 if (width != mViewWidth) {
                     mViewWidth = width;
                     updateScale();
