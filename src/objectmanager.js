@@ -24,7 +24,7 @@ hbbtv.objectManager = (function() {
     let objectFactoryMethodTable = [];
     let objectUpgradeHandlers = [];
     let imageFactor = 1;
-    // let defaultDevicePixelRatio = -1;
+    let defaultDevicePixelRatio = -1;
     let graphicPlane = 720;
 
     function initialise() {
@@ -48,19 +48,21 @@ hbbtv.objectManager = (function() {
         upgradeDescendantObjects(document);
         console.log("old window.devicePixelRatio");
         console.log(window.devicePixelRatio);
-        // defaultDevicePixelRatio = window.devicePixelRatio;
-        // console.log("defaultDevicePixelRatio");
-        // console.log(defaultDevicePixelRatio);
+        defaultDevicePixelRatio = window.devicePixelRatio;
+        console.log("defaultDevicePixelRatio");
+        console.log(defaultDevicePixelRatio);
         graphicPlane = hbbtv.bridge.configuration.getRenderingResolution();
+        console.log("graphicPlane");
         console.log(graphicPlane);
-        check();
-        // console.log(defaultDevicePixelRatio);
+        updatePixelRatio();
         console.log("new window.devicePixelRatio");
         console.log(window.devicePixelRatio);
-
+        imageFactor = defaultDevicePixelRatio * (720 / graphicPlane);
+        console.log("imageFactor");
+        console.log(imageFactor);
     }
 
-    function check() {
+    function updatePixelRatio() {
         Object.defineProperty(window, 'devicePixelRatio', {
             value: (graphicPlane / 720.0),
             writable: false
@@ -139,71 +141,35 @@ hbbtv.objectManager = (function() {
                 source = source.trim();
                 let parts = source.split(' ');
                 let widthDescriptor = parseFloat(parts[1].match(/\d+(\.\d+)?/));
-                console.log(widthDescriptor);
                 if (newSrcSet !== '') {
                     newSrcSet += ', ';
                 }
-                newSrcSet += parts[0] + ' ' + widthDescriptor * imageFactor + descriptor;
+                if (descriptor == 'w') {
+                    newSrcSet += parts[0] + ' ' + Math.round(widthDescriptor * imageFactor) + descriptor;
+
+                } else {
+                    newSrcSet += parts[0] + ' ' + widthDescriptor * imageFactor + descriptor;
+                }
+                
             })
             console.log(newSrcSet); 
             imageElement.setAttribute('srcset', newSrcSet);
-
             if (sizesValue == null) {
-                // console.log("checkkkkkkkkkkkkkkkkkkk");
-                var percentage = (imageFactor * 100) + '%';
-                var style = 'width: ' + percentage + '; height: auto; ';
-                var style = 'width: 50%; height: auto; ';
-                imageElement.setAttribute('style', style);
-                // console.log("checkkkkkkkkkkkkkkkkkkk");
-                console.log(imageElement.getAttribute('style'));
+                let onload = 'this.width*=' + Math.round(imageFactor * 100) / 100;
+                imageElement.setAttribute('onload', onload);
             }
         }
     }
 
-    // Object.defineProperty(window, 'devicePixelRatio', {
-    //     value: defaultDevicePixelRatio * (graphicPlane / 720.0),
-    //     writable: false
-    // });
-
     // Mutation observer
     function addMutationIntercept(callbackObjectAdded, callbackObjectRemoved) {
         const observer = new MutationObserver(function(mutationsList) {
-            // console.log("defaultDevicePixelRatio");
-            // console.log(defaultDevicePixelRatio);
-            console.log("window.devicePixelRatio");
-            console.log(window.devicePixelRatio);
-            imageFactor = 720.0 / graphicPlane;
-            console.log("imageFactor");
-            console.log(imageFactor);
-            console.log("window.innerHeight");
-            console.log(window.innerHeight);
-            console.log("document.documentElement.clientHeight");
-            console.log(document.documentElement.clientHeight);
             for (const mutation of mutationsList) {
                 if (mutation.type === 'childList') {
                     for (const node of mutation.addedNodes) {
-                        // var dpr = window.devicePixelRatio || 1;
-                        // console.log("pixelRatio : " + dpr);
                         if (node.nodeType === Node.ELEMENT_NODE && node.nodeName.toLowerCase() === 'img') {
-                            // console.log("updateImageSrc");
-                            // var dpr = window.devicePixelRatio || 1;
-                            // console.log("pixelRatio : " + dpr);
-                            // console.log("imageFactor : " + imageFactor);
                             updateImageSrc(node);
                         }
-                        // if (node.srcset != null) {
-                        //     console.log("removeAttribute");
-                        //     console.log(node.id);
-                        //     var dpr = window.devicePixelRatio || 1;
-                        //     console.log(dpr);
-                        //     node.removeAttribute('srcset');
-
-                        // }
-                        
-                        // console.log(node);
-                        // console.log(node.src);
-                        // console.log(node.srcset);
-                        // console.log(node.style);
                         if (node.nodeName && node.nodeName.toLowerCase() === 'object') {
                             callbackObjectAdded(node);
                         }
@@ -317,21 +283,11 @@ hbbtv.objectManager = (function() {
     function addMetaViewportElement() {
         console.log("addMetaViewportElement");
         if (!document.querySelector('meta[name=viewport]')) {
-            // console.log("addMetaViewportElement");
             let meta = document.createElement('meta');
             meta.name = 'viewport';
             meta.content = 'width=device-width, initial-scale=1.0';
             document.getElementsByTagName('head')[0] ?.appendChild(meta);
-            // document.head.appendChild(meta)
-            // console.log(document.getElementsByTagName('head').);
-            // console.log(document.getElementsByTagName('head')[1]);
-            // console.log(document.head.title);
-            // console.log(document.head.meta.content);
         }
-        // var headContent = document.head.children; // Get all child nodes of the head element
-        // for (var i = 0; i < headContent.length; i++) {
-        //     console.log(headContent[i].outerHTML); // Output the outer HTML of each child node
-        // }
     }
     
     return {

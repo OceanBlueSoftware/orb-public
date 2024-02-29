@@ -49,10 +49,11 @@ class BrowserView extends WebView {
     private WebResourceClient mWebResourceClient;
     private SessionCallback mSessionCallback;
     private JavaScriptBridgeInterface mJavaScriptBridgeInterface;
-    private int mRenderingResolution = 2160;
+    private int mGraphicsPlane = 720; // Graphic plane resolution is 720 by default
 
     private int mViewWidth = 0; // Await onLayoutChange to calculate View width
     private int mAppWidth = 1280; // Apps are 1280 by default
+    private int mAppHeight = 720; // Apps are 720 by default
 
     public BrowserView(Context context, Bridge bridge,
                        OrbSessionFactory.Configuration configuration, DsmccClient dsmccClient) {
@@ -86,6 +87,7 @@ class BrowserView extends WebView {
                 Log.d(TAG, "onLayoutChange : width : " + width);
                 if (width != mViewWidth) {
                     mViewWidth = width;
+                    mGraphicsPlane = mAppHeight * width / mAppWidth;
                     updateScale();
                 }
             }
@@ -231,7 +233,7 @@ class BrowserView extends WebView {
     }
 
     public int getRenderingResolution() {
-        return mRenderingResolution;
+        return mGraphicsPlane;
     }
 
     private void updateScale() {
