@@ -508,7 +508,23 @@ hbbtv.mediaManager = (function() {
         });
         media.addEventListener('progress', updateSeekable);
         media.addEventListener('progress', updateBuffered);
-        media.addEventListener('timeupdate', () => { updateSeekableRdk(rdk__orb_timeShiftBufferDepthReceived); });
+        /**
+                Description
+                RDK seekable tests still fail. The difference on the seekable property exceeds the expected difference by a couple of milliseconds. Rework RDK approach so that it applies a sliding window for the seekable property, keeping it in the expected range (MPD@timeShiftBufferDepth)
+
+                Tests
+                org.hbbtv_HTML5-DASH016
+                org.hbbtv_HTML5-DASH017
+                org.hbbtv_HTML5-DASH020
+                org.hbbtv_HTML5-DASH023
+                org.hbbtv_HTML5-DASH025
+                org.hbbtv_HTML5-DASH034
+
+         */
+        if (hbbtv.native.name === 'rdk') {
+            media.addEventListener('timeupdate', () => { updateSeekableRdk(rdk__orb_timeShiftBufferDepthReceived); });
+        }
+ 
         media.addEventListener('timeupdate', makeCallback('currentTime'));
         media.addTextTrack = function() {
             return textTracks.orb_addTextTrack.apply(textTracks, arguments);
