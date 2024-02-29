@@ -717,8 +717,8 @@ class Bridge extends AbstractBridge {
      * @return An integer value of the rendering resolution.
      */
     @Override
-    protected int Configuration_getRenderingResolution(BridgeToken token) {
-        return mTvBrowserSession.getRenderingResolution();
+    protected int Configuration_getCurrentGraphicsPlane(BridgeToken token) {
+        return mTvBrowserSession.getCurrentGraphicsPlane();
     }
 
     /**

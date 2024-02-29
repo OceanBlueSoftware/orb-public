@@ -969,8 +969,8 @@ hbbtv.bridge.configuration = (function() {
      * @method
      * @memberof bridge.configuration#
      */
-    exported.getRenderingResolution = function() {
-        return hbbtv.native.request('Configuration.getRenderingResolution', {}).result;
+    exported.getCurrentGraphicsPlane = function() {
+        return hbbtv.native.request('Configuration.getCurrentGraphicsPlane', {}).result;
     };
 
     /**

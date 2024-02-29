@@ -1,7 +1,6 @@
 package org.orbtv.orblibrary;
 
 import android.content.Context;
-import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -374,8 +373,8 @@ class OrbSession implements IOrbSession {
      * @return An integer value of the rendering resolution.
      */
     @Override
-    public int getRenderingResolution() {
-        return mBrowserView.getRenderingResolution();
+    public int getCurrentGraphicsPlane() {
+        return mBrowserView.getCurrentGraphicsPlane();
     }
 
     /**

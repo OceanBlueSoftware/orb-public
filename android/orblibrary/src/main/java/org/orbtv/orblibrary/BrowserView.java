@@ -232,7 +232,7 @@ class BrowserView extends WebView {
         destroy();
     }
 
-    public int getRenderingResolution() {
+    public int getCurrentGraphicsPlane() {
         return mGraphicsPlane;
     }
 

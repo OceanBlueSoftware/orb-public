@@ -928,7 +928,7 @@ public abstract class AbstractBridge {
      *
      * @return An integer value of the rendering resolution.
      */
-    protected abstract int Configuration_getRenderingResolution(BridgeToken token);
+    protected abstract int Configuration_getCurrentGraphicsPlane(BridgeToken token);
 
     /**
      * Get the current capabilities of the terminal.
@@ -1763,8 +1763,8 @@ public abstract class AbstractBridge {
                 break;
             }
 
-            case "Configuration.getRenderingResolution": {
-                int result = Configuration_getRenderingResolution(
+            case "Configuration.getCurrentGraphicsPlane": {
+                int result = Configuration_getCurrentGraphicsPlane(
                         token
                 );
                 response.put("result", result);

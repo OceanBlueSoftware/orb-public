@@ -51,7 +51,7 @@ hbbtv.objectManager = (function() {
         defaultDevicePixelRatio = window.devicePixelRatio;
         console.log("defaultDevicePixelRatio");
         console.log(defaultDevicePixelRatio);
-        graphicPlane = hbbtv.bridge.configuration.getRenderingResolution();
+        graphicPlane = hbbtv.bridge.configuration.getCurrentGraphicsPlane();
         console.log("graphicPlane");
         console.log(graphicPlane);
         updatePixelRatio();

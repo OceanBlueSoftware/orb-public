@@ -107,9 +107,9 @@ public interface IOrbSession {
     /**
      * Get the current resolution supported by the terminal.
      *
-     * @return An integer value of the rendering resolution.
+     * @return An integer value of the  resolution.
      */
-    int getRenderingResolution();
+    int getCurrentGraphicsPlane();
 
     /**
      * Launches a "Broadcast-INDEPENDENT" application, the url could be an XML-AIT file.
