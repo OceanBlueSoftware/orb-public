@@ -279,6 +279,8 @@ class ApplicationManager {
             if (mSessionCallback != null) {
                 int[] otherKeys = new int[0];
                 mSessionCallback.notifyKeySetChanged(0, otherKeys);
+                // TODO The key set might not be 0 for some versions.
+                // TODO Also, if active is changed, that might change the key set. Do we need to move this notify method to the C++ layer?
                 mSessionCallback.resetBroadcastPresentation();
                 mSessionCallback.loadApplication(appId, entryUrl);
                 if (m_entryUrl.equals(NOT_STARTED_URL)) {
