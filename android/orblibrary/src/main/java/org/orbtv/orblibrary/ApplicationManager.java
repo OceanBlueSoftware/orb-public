@@ -266,8 +266,6 @@ class ApplicationManager {
     private void jniCbResetBroadcastPresentation() {
         synchronized (mLock) {
             if (mSessionCallback != null) {
-                int[] otherKeys = new int[0];
-                mSessionCallback.notifyKeySetChanged(0, otherKeys);
                 mSessionCallback.resetBroadcastPresentation();
             } else {
                 Log.e(TAG, "Presentation listener not set.");
@@ -279,6 +277,8 @@ class ApplicationManager {
         synchronized (mLock) {
             m_entryUrl = entryUrl;
             if (mSessionCallback != null) {
+                int[] otherKeys = new int[0];
+                mSessionCallback.notifyKeySetChanged(0, otherKeys);
                 mSessionCallback.resetBroadcastPresentation();
                 mSessionCallback.loadApplication(appId, entryUrl);
                 if (m_entryUrl.equals(NOT_STARTED_URL)) {
