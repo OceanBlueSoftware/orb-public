@@ -2042,6 +2042,9 @@ public class MockOrbSessionCallback implements IOrbSessionCallback {
                 consoleLog("Notify settings of in-vision signing, isEnabled: " + isEnabled);
                 break;
             }
+            case KeyEvent.KEYCODE_ESCAPE: {
+                mSession.onExitKeyPress();
+            }
             default:
                 return false;
         }
