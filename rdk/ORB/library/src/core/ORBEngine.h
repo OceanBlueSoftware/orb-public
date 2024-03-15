@@ -255,6 +255,15 @@ public:
         return m_preferredUiLanguage;
     }
 
+    std::string GetErrorDescription() const
+    {
+        return m_errorDescription;
+    }
+
+    void SetErrorDescription(std::string errorDescription) 
+    {
+        m_errorDescription = errorDescription;
+    }
 private:
 
     // member variables
@@ -269,5 +278,6 @@ private:
     std::string m_currentAppUrl;
     bool m_started;
     std::string m_preferredUiLanguage;
+    std::string m_errorDescription;
 }; // class ORBEngine
 } // namespace orb

@@ -129,6 +129,7 @@ ORBEngine::ORBEngine()
     , m_currentAppUrl("")
     , m_started(false)
     , m_preferredUiLanguage("")
+    , m_errorDescription("")
 {
     ORB_LOG_NO_ARGS();
 }
@@ -346,11 +347,16 @@ void ORBEngine::LoadDvbUrl(std::string url, int requestId)
 void ORBEngine::NotifyApplicationLoadFailed(std::string url, std::string errorDescription)
 {
     ORB_LOG("appId=%d url=%s error=%s", m_currentAppId, url.c_str(), errorDescription.c_str());
-
-    // notify the application manager that the loading of the given application has failed
-    bool isConnectedToInternet = GetORBPlatform()->Network_IsConnectedToInternet();
-    GetApplicationManager()->OnNetworkAvailabilityChanged(isConnectedToInternet);
-    GetApplicationManager()->OnLoadApplicationFailed(m_currentAppId);
+    size_t arrowPos = errorDescription.find("->");
+    if (arrowPos != std::string::npos) {
+        errorDescription = errorDescription.substr(arrowPos + 2);
+        SetErrorDescription(errorDescription);
+    } else {
+        // notify the application manager that the loading of the given application has failed
+        bool isConnectedToInternet = GetORBPlatform()->Network_IsConnectedToInternet();
+        GetApplicationManager()->OnNetworkAvailabilityChanged(isConnectedToInternet);
+        GetApplicationManager()->OnLoadApplicationFailed(m_currentAppId);
+    }
 }
 
 /**
@@ -366,6 +372,7 @@ void ORBEngine::NotifyApplicationPageChanged(std::string url)
     m_currentAppUrl = url;
     GetApplicationManager()->OnApplicationPageChanged(m_currentAppId, url);
 }
+
 
 /**
  * Get the User-Agent string.
