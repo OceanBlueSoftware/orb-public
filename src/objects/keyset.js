@@ -82,6 +82,18 @@ hbbtv.objects.KeySet = (function() {
         return hbbtv.bridge.manager.getKeyIcon(code);
     };
 
+    prototype.getKeyLabel = function(code) {
+        if (privates.get(this).disabled) {
+            return null;
+        }
+        for (const key in window.KeyEvent) {
+            if (window.KeyEvent[key] === code) {
+                return key;
+            }
+        }
+        return null;
+    };
+
     function initialise(data) {
         privates.set(this, {});
         const p = privates.get(this);
