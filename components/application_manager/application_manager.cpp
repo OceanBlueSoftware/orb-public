@@ -703,7 +703,7 @@ void ApplicationManager::OnApplicationPageChanged(uint16_t appId, const std::str
     if (m_app.isRunning && m_app.id == appId)
     {
         m_app.loadedUrl = url;
-        if (!Utils::IsInvalidDvbTriplet(m_currentService))
+        if (!Utils::IsInvalidDvbTriplet(m_currentService) && !url.contains("https://www.live.bbctvapps.co.uk/tap/iplayer"))
         {
             // For broadcast-related applications we reset the broadcast presentation on page change,
             // as dead JS objects may have suspended presentation, set the video rectangle or set
