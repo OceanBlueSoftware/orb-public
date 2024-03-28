@@ -98,9 +98,10 @@
         VK_VOLUME_DOWN: "AudioVolumeDown",
     };
 
-    document.addEventListener('keydown', function(originalEvent) {
+    function keyHandler(originalEvent) {
         if(originalEvent.code === "") {
             originalEvent.preventDefault();
+            originalEvent.stopImmediatePropagation();
             const keyLabel = Object.keys(keys).find(key => keys[key] === originalEvent.keyCode);
             const newEvent = new KeyboardEvent(originalEvent.type, {
                 keyCode: originalEvent.keyCode,
@@ -108,7 +109,11 @@
                 bubbles: true
             });
 
-            document.dispatchEvent(newEvent);
+            window.dispatchEvent(newEvent);
         }
-    });
+    }
+
+    window.addEventListener('keydown', keyHandler);
+    window.addEventListener('keyup', keyHandler);
+    window.addEventListener('keypress', keyHandler);
 })();
