@@ -281,7 +281,8 @@ class BrowserView extends WebView {
                 keyCode != KeyEvent.KEYCODE_MEDIA_PAUSE &&
                 keyCode != KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE &&
                 keyCode != KeyEvent.KEYCODE_MEDIA_REWIND &&
-                keyCode != KeyEvent.KEYCODE_MEDIA_FAST_FORWARD;
+                keyCode != KeyEvent.KEYCODE_MEDIA_FAST_FORWARD &&
+                keyCode != KeyEvent.KEYCODE_MEDIA_RECORD;
     }
 
     private void dispatchJavaScriptBridgeEvent(String type, JSONObject properties) {

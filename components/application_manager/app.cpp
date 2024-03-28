@@ -38,6 +38,7 @@ App App::CreateAppFromUrl(const std::string &url)
     app.appId = 0;
 
     app.keySetMask = 0;
+    app.otherKeys = std::vector<uint16_t>();
 
     app.isTrusted = false;
     app.isBroadcast = false;
@@ -70,6 +71,7 @@ App App::CreateAppFromAitDesc(const Ait::S_AIT_APP_DESC *desc,
     app.appId = desc->appId;
 
     app.keySetMask = 0;
+    app.otherKeys = std::vector<uint16_t>();
 
     app.isTrusted = isTrusted;
     app.isBroadcast = isBroadcast;
