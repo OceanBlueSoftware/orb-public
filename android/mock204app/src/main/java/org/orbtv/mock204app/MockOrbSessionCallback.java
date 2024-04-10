@@ -2133,6 +2133,7 @@ public class MockOrbSessionCallback implements IOrbSessionCallback {
             }
             case KeyEvent.KEYCODE_ESCAPE: {
                 mSession.onExitKeyPress();
+                break;
             }
             default:
                 return false;
