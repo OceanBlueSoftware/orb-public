@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <chrono>
+#include <thread>
 
 #include "Module.h"
 
@@ -2318,6 +2320,12 @@ private:
     static void loadChangedCallback(WebKitWebView *webView, WebKitLoadEvent loadEvent,
         WebKitImplementation *browser)
     {
+     
+        if (loadEvent == WEBKIT_LOAD_STARTED)
+        {
+         std::string provisional_uri(webkit_web_view_get_uri (webView));
+         fprintf(stderr, "[loadChangedCallback] %s\n", provisional_uri.c_str());
+        }
         if (loadEvent == WEBKIT_LOAD_FINISHED)
         {
             int32_t httpStatusCode = browser->GetResponseHTTPStatusCode();
@@ -2395,6 +2403,24 @@ private:
             reinterpret_cast<GCallback>(createWebViewForAutomationCallback), browser);
     }
 
+
+// gboolean
+// user_function (WebKitWebView  *web_view,
+//                WebKitLoadEvent load_event,
+//                gchar          *failing_uri,
+//                gpointer        error,
+//                gpointer        user_data)
+
+    // static void loadChangedCallback(WebKitWebView *webView, WebKitLoadEvent loadEvent,
+    //     WebKitImplementation *browser)
+    // {
+    static gboolean loadFailedCallback(WebKitWebView *web_view, WebKitLoadEvent loadEvent, gchar *failing_uri, gpointer error, gpointer user_data)
+    {
+        fprintf(stderr, "[WEBKIT::loadFailedCallback] %s\n", failing_uri);
+        return FALSE;
+    }
+
+
     /**
      * Respond to the WebKitWebResource::failed signal.
      */
@@ -2411,11 +2437,33 @@ private:
 
         // Send the application-load-failed notification to ORB iff the failed resource
         // corresponds to the current app URL
+        std::string errorDescription(error->message);
+        fprintf(stderr,"[WebKitImpl::resourceFailedCallback] URL FAIL = %s\n", resourceUri.c_str());
+        fprintf(stderr,"[WebKitImpl::resourceFailedCallback] MESSAGE = %s\n", errorDescription.c_str());
         if (currentAppUrl == resourceUri)
         {
-            std::string errorDescription(error->message);
             ORBWPEWebExtensionHelper::GetSharedInstance().GetORBClient()->
-            NotifyApplicationLoadFailed(resourceUri, errorDescription);
+                NotifyApplicationLoadFailed(resourceUri, errorDescription);
+        } else
+        {
+            ORBWPEWebExtensionHelper::GetSharedInstance().GetORBClient()->
+                NotifyApplicationLoadFailed(resourceUri, "store->" + errorDescription);
+        }
+    }
+
+    // void
+    // user_function (WebKitWebResource *resource,
+    //            gpointer           user_data)
+
+    static void resourceFinshedCallback(WebKitWebResource *resource, gpointer user_data)
+    {
+        // Resolve the failed resource URI
+        std::string resourceUri(webkit_web_resource_get_uri(resource));
+
+        WebKitURIResponse *response = webkit_web_resource_get_response(resource);
+        guint code = webkit_uri_response_get_status_code(response);
+        if(code >= 400) {
+            fprintf(stderr, "[resourceFinshedCallback] finsihed %s with code %d\n", resourceUri.c_str(), code);
         }
     }
 
@@ -2427,6 +2475,13 @@ private:
     {
         g_signal_connect(resource, "failed", reinterpret_cast<GCallback>(resourceFailedCallback),
             nullptr);
+        g_signal_connect(resource, "finished", reinterpret_cast<GCallback>(resourceFinshedCallback),
+            nullptr);
+        /*
+        void
+user_function (WebKitWebResource *resource,
+               gpointer           user_data)
+        */
     }
 
     uint32_t Worker() override
@@ -2590,6 +2645,8 @@ private:
         g_signal_connect(_view, "notify::uri", reinterpret_cast<GCallback>(uriChangedCallback),
             this);
         g_signal_connect(_view, "load-changed", reinterpret_cast<GCallback>(loadChangedCallback),
+            this);
+        g_signal_connect(_view, "load-failed", reinterpret_cast<GCallback>(loadFailedCallback),
             this);
         g_signal_connect(_view, "web-process-terminated",
             reinterpret_cast<GCallback>(webProcessTerminatedCallback), nullptr);

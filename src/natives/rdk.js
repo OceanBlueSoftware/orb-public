@@ -89,6 +89,16 @@ hbbtv.native = {
         }
         console.log('[RDK-Native] Dipsatching __orb_timeShiftBufferDepthReceived__');
         this.dashProxy.dispatchEvent(timeShiftEvt);
+
+        const serviceLocationEvt = new Event('__orb_serviceLocationReceived__');
+        if (e.data.hasOwnProperty('BaseURL')) {
+            Object.assign(serviceLocationEvt, {
+                serviceLocation: e.data.BaseURL.serviceLocation,
+            });
+        }
+        console.log('[RDK-Native] Dipsatching __orb_serviceLocationReceived__');
+        this.dashProxy.dispatchEvent(serviceLocationEvt);
+        
     },
 
     // Polling events

@@ -574,6 +574,9 @@ hbbtv.objects.DashProxy = (function() {
         
         hbbtv.native.dispatchManifestNativeEvents?.(e);
 
+        console.log('----------------------------------------------------');
+        console.log(e.data);
+        console.log('----------------------------------------------------');
         console.log(
             'manifest availability start time:',
             e.data.availabilityStartTime,
