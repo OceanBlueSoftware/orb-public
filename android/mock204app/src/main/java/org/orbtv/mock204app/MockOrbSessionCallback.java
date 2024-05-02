@@ -276,6 +276,7 @@ public class MockOrbSessionCallback implements IOrbSessionCallback {
         String displaySizeHeight = "39.9"; // Mock 32" TV
         String displaySizeMeasurementType = "built-in"; // hdmi-accurate, hdmi-other
         String audioOutputFormat = "stereo"; // multichannel, multichannel-preferred
+        boolean passThroughStatus = false;
         String html5MediaVariableRateMin = "0.5";
         String html5MediaVariableRateMax = "5.0";
 
@@ -289,6 +290,7 @@ public class MockOrbSessionCallback implements IOrbSessionCallback {
                 displaySizeHeight,
                 displaySizeMeasurementType,
                 audioOutputFormat,
+                passThroughStatus,
                 html5MediaVariableRateMin,
                 html5MediaVariableRateMax
         );
