@@ -105,6 +105,17 @@ class OrbSession implements IOrbSession {
                 mOrbSessionCallback.setPresentationSuspended(false);
             }
 
+           /**
+             * A running broadcast-independent application is still terminated but what
+             * happens next is implementation dependent. For example, it may
+             * vary depending on how the terminated application was originally started.
+             *
+             * Handle the exit in the platform side.
+             */
+            public void handleBroadcastIndependentExit() {
+                // TODO Implementation Dependent.
+            }
+
             /**
              * Tell the bridge to dispatch a ApplicationLoadError event.
              */

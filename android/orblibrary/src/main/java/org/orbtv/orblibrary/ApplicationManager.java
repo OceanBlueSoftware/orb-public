@@ -72,6 +72,15 @@ class ApplicationManager {
         void resetBroadcastPresentation();
 
         /**
+         * A running broadcast-independent application is still terminated but what
+         * happens next is implementation dependent. For example, it may
+         * vary depending on how the terminated application was originally started.
+         *
+         * Handle the exit in the platform side.
+         */
+        void handleBroadcastIndependentExit();
+
+        /**
          * Tell the bridge to dispatch a ApplicationLoadError event.
          */
         void dispatchApplicationLoadErrorEvent();
@@ -269,6 +278,16 @@ class ApplicationManager {
                 int[] otherKeys = new int[0];
                 mSessionCallback.notifyKeySetChanged(0, otherKeys);
                 mSessionCallback.resetBroadcastPresentation();
+            } else {
+                Log.e(TAG, "Presentation listener not set.");
+            }
+        }
+    }
+
+    private void jniCbHandleBroadcastIndependentExit() {
+        synchronized (mLock) {
+            if (mSessionCallback != null) {
+                mSessionCallback.handleBroadcastIndependentExit();
             } else {
                 Log.e(TAG, "Presentation listener not set.");
             }

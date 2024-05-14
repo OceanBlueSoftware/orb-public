@@ -77,6 +77,15 @@ public:
          * the video rectangle or set the presented components.
          */
         virtual void ResetBroadcastPresentation() = 0;
+        
+        /**
+         * A running broadcast-independent application is still terminated but what
+         * happens next is implementation dependent. For example, it may
+         * vary depending on how the terminated application was originally started.
+         *
+         * Handle the exit in the platform side.
+         */
+        virtual void HandleBroadcastIndependentExit() = 0;
 
         /**
          *  Tell the bridge to dispatch ApplicationLoadError to the loaded application.

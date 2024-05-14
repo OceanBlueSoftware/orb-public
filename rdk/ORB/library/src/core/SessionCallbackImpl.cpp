@@ -195,6 +195,21 @@ void SessionCallbackImpl::ResetBroadcastPresentation()
     ORBEngine::GetSharedInstance().GetORBPlatform()->Broadcast_Reset();
 }
 
+/**   
+ * @brief SessionCallbackImpl::HandleBroadcastIndependentExit 
+ *
+ * A running broadcast-independent application is still terminated but what
+ * happens next is implementation dependent. For example, it may
+ * vary depending on how the terminated application was originally started.
+ *
+ * Handle the exit in the platform side.
+ */
+void SessionCallbackImpl::HandleBroadcastIndependentExit()
+{
+    ORB_LOG_NO_ARGS();
+    ORBEngine::GetSharedInstance().GetORBPlatform()->Broadcast_Reset();
+}
+
 /**
  * @brief SessionCallbackImpl::DispatchApplicationLoadErrorEvent
  */

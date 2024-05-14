@@ -38,6 +38,7 @@
 #define CB_GET_PARENTAL_CONTROL_REGION3 10
 #define CB_ON_APPLICATION_TYPE_UPDATED 11
 #define CB_NUMBER_OF_ITEMS 12
+#define CB_HANDLE_BROADCAST_INDEPENDENT_EXIT 13
 
 static jfieldID gJavaManagerPointerField;
 static jmethodID gCb[CB_NUMBER_OF_ITEMS];
@@ -88,6 +89,12 @@ public:
     {
         JNIEnv *env = JniUtils::GetEnv();
         env->CallVoidMethod(mJavaCbObject, gCb[CB_RESET_BROADCAST_PRESENTATION]);
+    }
+
+    void HandleBroadcastIndependentExit() override
+    {
+        JNIEnv *env = JniUtils::GetEnv();
+        env->CallVoidMethod(mJavaCbObject, gCb[CB_HANDLE_BROADCAST_INDEPENDENT_EXIT]);
     }
 
     void DispatchApplicationLoadErrorEvent() override
@@ -161,6 +168,8 @@ void InitialiseApplicationManagerNative()
         "jniCbStopBroadcast", "()V");
     gCb[CB_RESET_BROADCAST_PRESENTATION] = env->GetMethodID(managerClass,
         "jniCbResetBroadcastPresentation", "()V");
+    gCb[CB_HANDLE_BROADCAST_INDEPENDENT_EXIT] = env->GetMethodID(managerClass,
+        "jniCbHandleBroadcastIndependentExit", "()V");
     gCb[CB_LOAD_APPLICATION] = env->GetMethodID(managerClass,
         "jniCbLoadApplication", "(ILjava/lang/String;)V");
     gCb[CB_SHOW_APPLICATION] = env->GetMethodID(managerClass,
