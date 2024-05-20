@@ -98,8 +98,14 @@ App App::CreateAppFromAitDesc(const Ait::S_AIT_APP_DESC *desc,
     app.setScheme(desc->scheme);
     if (!desc->scheme.empty())
     {
+        size_t index = desc->scheme.find('?');
+        app.setScheme(desc->scheme.substr(0, index));
         app.entryUrl = Utils::MergeUrlParams("", app.entryUrl,
                                              getUrlParamsFromAppScheme(app.getScheme()));
+        if (index != std::string::npos) {
+            std::string llocParams = desc->scheme.substr(index);
+            app.entryUrl = Utils::MergeUrlParams("", app.entryUrl, llocParams);
+        }
         app.loadedUrl = app.entryUrl;
     }
 
