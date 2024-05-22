@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 hbbtv.objects.DASHEvent = (function() {
     const prototype = { };
     const privates = new WeakMap();
@@ -29,7 +30,7 @@ hbbtv.objects.DASHEvent = (function() {
         if (typeof(data) === "string") {
             if (streamEvent.DASHEvent.contentEncoding === "binary") {
                 const textEncoder = new TextEncoder();
-                streamEvent.DASHEvent.data = streamEvent.data = textEncoder.encode(data);
+                streamEvent.DASHEvent.data = streamEvent.data = textEncoder.encode(data).buffer;
             }
             else {
                 try {
