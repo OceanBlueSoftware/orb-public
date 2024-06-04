@@ -680,7 +680,7 @@ hbbtv.objects.DashProxy = (function() {
                     buffer: {
                         enableSeekDecorrelationFix: true,
                         fastSwitchEnabled: true,
-                        flushBufferAtTrackSwitch: true,
+                        flushBufferAtTrackSwitch: false,
                     },
                     utcSynchronization: {
                         enableBackgroundSyncAfterSegmentDownloadError: true,
