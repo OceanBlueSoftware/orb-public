@@ -90,10 +90,10 @@ hbbtv.native = {
     },
     // Polling events
     getSeekablePollingEvent: function() {
-        return 'progress';
+        return 'timeupdate';
     },
     getBufferedPollingEvent: function() {
-        return 'progress';
+        return 'timeupdate';
     },
      // Event handlers
     updateSeekable: function(e) {
