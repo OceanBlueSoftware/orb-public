@@ -1548,7 +1548,26 @@ hbbtv.objects.VideoBroadcast = (function() {
                             /* DAE vol5 Table 8 state transition #9 */
                             hbbtv.holePuncher.setBroadcastVideoObject(this);
                             p.playState = PLAY_STATE_PRESENTING;
-                            dispatchChannelChangeSucceededEvent.call(this, p.currentChannelData);
+
+                            /**
+                             * Dispatch channel change succeeded when transitioning to presenting state for rdk
+                             * to solve issue where channel information is displayed on tune to different transponder. 
+                             */
+                            if (hbbtv.native.name === 'rdk') {
+                                try {
+                                    p.currentNonQuietChannelData = p.currentChannelData = hbbtv.objects.createChannel(
+                                        hbbtv.bridge.broadcast.getCurrentChannelForEvent()
+                                    );
+                                } catch (e) {
+                                    if (e.name === 'SecurityError') {
+                                        console.log(
+                                            'onChannelStatusChanged, unexpected condition: app appears broadcast-independent.'
+                                        );
+                                    }
+                                    throw e;
+                                }
+                                dispatchChannelChangeSucceededEvent.call(this, p.currentChannelData);
+                            }
                             dispatchPlayStateChangeEvent.call(this, p.playState);
                             break;
 
@@ -1620,10 +1639,11 @@ hbbtv.objects.VideoBroadcast = (function() {
                         /* Possibly a user initiated channel change (with app not bound to service) */
                         p.playState = PLAY_STATE_CONNECTING;
                         if (
+                            hbbtv.native.name === 'android' && (
                             p.currentChannelData == null ||
                             event.servId != p.currentChannelData.sid ||
                             event.onetId != p.currentChannelData.onid ||
-                            event.transId != p.currentChannelData.tsid
+                            event.transId != p.currentChannelData.tsid)
                         ) {
                             try {
                                 p.currentNonQuietChannelData = p.currentChannelData = hbbtv.objects.createChannel(
