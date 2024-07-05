@@ -18,6 +18,7 @@ hbbtv.mediaManager = (function() {
     let objectHandlers = {};
     let fallbackHandlers = undefined;
     let mediaType = undefined;
+    let oldProps = {};
 
     const mediaProxy = hbbtv.objects.createIFrameObjectProxy();
     window.orbNetwork = {
@@ -351,11 +352,13 @@ hbbtv.mediaManager = (function() {
                 'readyState',
             ];
             for (const key of keys) {
-                props[key] = media[key];
+                if (oldProps[key] !== media[key]) {
+                    oldProps[key] = props[key] = media[key];
+                }
             }
             mediaProxy.updateObserverProperties(MEDIA_PROXY_ID, props);
             mediaProxy.dispatchEvent(MEDIA_PROXY_ID, e);
-            console.log('iframe: update properties', e.type, props);
+            //console.log('iframe: update properties', e.type, props);
         };
 
         const updateBuffered = function(e) {
