@@ -29,6 +29,7 @@ hbbtv.objects.AudioTrackList = (function() {
         'encoding',
         'encrypted',
         'numChannels',
+        'preselectionId'
     ];
 
     Object.defineProperty(listProto, 'length', {

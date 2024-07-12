@@ -390,7 +390,23 @@ hbbtv.objects.DashProxy = (function() {
                     encrypted: track.contentProtection ? true : false,
                     accessibility: parseInt(track.accessibility[0]),
                 };
-                tracks.push(info);
+                if (track.preselection) {
+                    for (let i = 0; i < track.preselection.length; i++) {
+                        let shallowClonedInfo = { ...info };
+                        shallowClonedInfo.preselectionId = track.preselection[i].id;
+                        shallowClonedInfo.preselectionIndex = track.preselection[i].index;
+                        shallowClonedInfo.tag = track.preselection[i].tag;
+                        shallowClonedInfo.label = track.preselection[i].Label;
+                        if (track.preselection[i].lang) {
+                            shallowClonedInfo.language = track.preselection[i].lang;
+                        }
+                        console.log("Handled preselection " + i, JSON.stringify(shallowClonedInfo));
+                        tracks.push(shallowClonedInfo);
+                    }
+                    tracks.sort((a,b) => (a.preselectionIndex ?? a.index) - (b.preselectionIndex ?? b.index));
+                } else {
+                    tracks.push(info);
+                }
             });
             return tracks;
         }
@@ -611,8 +627,13 @@ hbbtv.objects.DashProxy = (function() {
                 let nextTrack = player
                     .getTracksFor('audio')
                     .find((track) => track.index === this.audioTracks[i].index);
-                if (player.getCurrentTrackFor('audio') !== nextTrack) {
-                    player.setCurrentTrack(nextTrack);
+                if ((player.getCurrentTrackFor('audio') !== nextTrack)) {
+                    player.setCurrentTrack(nextTrack, this.audioTracks[i].preselectionId);
+                } else {
+                    if (this.audioTracks[i].preselectionId &&
+                        (this.audioTracks[i].selectedPreselectionId !== nextTrack.selectedPreselectionId)) { //Handle Preselection choice
+                        player.setCurrentTrack(nextTrack, this.audioTracks[i].preselectionId);
+                    }
                 }
                 break;
             }
