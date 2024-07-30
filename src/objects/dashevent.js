@@ -28,7 +28,18 @@ hbbtv.objects.DASHEvent = (function() {
         });
         const data = streamEvent.text;
         if (typeof(data) === "string") {
-            if (streamEvent.DASHEvent.contentEncoding === "binary") {
+            if (streamEvent.DASHEvent.contentEncoding === "binaryHex") {
+                if (streamEvent.data.length % 2 !== 0) {
+                    throw new Error("Hex string must have an even length");
+                }
+                const buffer = new ArrayBuffer(streamEvent.data.length / 2);
+                const uint8Array = new Uint8Array(buffer);
+                for (let i = 0; i < uint8Array.length; i++) {
+                    uint8Array[i] = parseInt(streamEvent.data.substr(i * 2, 2), 16);
+                }
+                streamEvent.DASHEvent.data = streamEvent.data = buffer;
+                streamEvent.text = String.fromCharCode(...uint8Array);
+            } else if (streamEvent.DASHEvent.contentEncoding.startsWith("binary")) {
                 const textEncoder = new TextEncoder();
                 streamEvent.DASHEvent.data = streamEvent.data = textEncoder.encode(data).buffer;
             }
