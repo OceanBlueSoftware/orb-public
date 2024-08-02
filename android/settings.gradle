@@ -1,7 +1,7 @@
 rootProject.name = "orb"
 
 // Set the HbbTV version here (203 or 204)
-gradle.ext.ORB_HBBTV_VERSION = 203
+gradle.ext.ORB_HBBTV_VERSION = 204
 
 include ':orblibrary'
 if (gradle.ext.ORB_HBBTV_VERSION == 203) {
