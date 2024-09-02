@@ -188,7 +188,7 @@ hbbtv.native = {
          * In this case, an error event should be generated of type MEDIA_ERR_NETWORK (error.code = 2). DashProxy will dispatch
          * this error event.
          */
-        if (this.pausedDelta && this.media.currentTime < ranges[0].start) {
+        if (this.pausedDelta && (ranges.length !== 0) &&  (this.media.currentTime < ranges[0].start)) {
             const e = new Event('error');
             e.error = {};
             e.error.code = 2;
