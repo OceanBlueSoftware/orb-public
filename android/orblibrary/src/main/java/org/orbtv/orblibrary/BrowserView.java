@@ -34,6 +34,7 @@ import org.json.JSONObject;
 import org.orbtv.orbpolyfill.BridgeToken;
 
 import java.util.Arrays;
+import android.webkit.RenderProcessGoneDetail;
 
 class BrowserView extends WebView {
     private static final String TAG = BrowserView.class.getSimpleName();
@@ -114,6 +115,16 @@ class BrowserView extends WebView {
                     mSessionCallback.notifyApplicationPageChanged(mAppId, request.getUrl().toString());
                 }
                 return mWebResourceClient.shouldInterceptRequest(request, mAppId);
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                Log.e(TAG, "onRenderProcessGone didCrash=" + detail.didCrash());
+                if (detail.didCrash()) {
+                    System.exit(1);
+                    return true;
+                }
+                return false;
             }
         });
 
