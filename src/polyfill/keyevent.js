@@ -117,4 +117,17 @@
     window.addEventListener('keydown', keyHandler);
     window.addEventListener('keyup', keyHandler);
     window.addEventListener('keypress', keyHandler);
+
+    const keyCode13ToClickDomains = [ "tvopen.gr" ];
+    if (keyCode13ToClickDomains.some(domain => window.location.hostname.endsWith(domain))) {
+        document.addEventListener("keydown", function(e) {
+            if (e.keyCode == 13) {
+                console.warn(`Applying keyCode 13 to click trigger for: ${window.location.hostname}`);
+                const focusedElement = document.activeElement;
+                if (focusedElement && (typeof focusedElement.onclick === 'function')) {
+                    focusedElement.click();
+                }
+            }
+        }, false);
+    }
 })();
