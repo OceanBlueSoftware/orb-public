@@ -52,6 +52,10 @@ hbbtv.objects.Application = (function() {
         }
     };
 
+    prototype.activate = function() {
+        console.error("HbbTV app tried to call Application.activate()");
+    }
+
     prototype.hide = function() {
         if (privates.get(this).disabled) {
             return;
