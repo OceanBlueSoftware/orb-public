@@ -448,7 +448,7 @@ hbbtv.drmManager = (function() {
         return Result.STATUS_UNKNOWN;
     }
 
-    function setActiveDRM() {
+    function setActiveDRM(DRMSystemID) {
         /* Note: Not sure this needs to go into the bridge */
         return hbbtv.bridge.drm.setActiveDRM(DRMSystemID);
     }
