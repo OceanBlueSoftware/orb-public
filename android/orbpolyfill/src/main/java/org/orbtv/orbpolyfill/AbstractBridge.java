@@ -22,6 +22,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.util.Log;
 
 public abstract class AbstractBridge {
     public interface SessionCallback {
@@ -347,8 +348,11 @@ public abstract class AbstractBridge {
             properties.put("data", data);
             properties.put("text", text);
             properties.put("status", status);
+            Log.v("TAG", "AbstractBridge.java dispatchStreamEvent data="+data);
+            Log.v("TAG", "AbstractBridge.java dispatchStreamEvent text="+text);
             if (dashEvent != null) {
                 properties.put("DASHEvent", dashEvent.toJSONObject());
+                Log.v("TAG", "AbstractBridge.java dispatchStreamEvent DASHEvent="+dashEvent.toJSONObject());
             }
         } catch (JSONException ignored) {
         }
@@ -902,8 +906,8 @@ public abstract class AbstractBridge {
      *
      * @param token The token associated with this request.
      * @param value The keyset to set for this application.
-     * @param otherKeys The key events which are available to the browser & are not 
-     *    included in one of the keySet constants 
+     * @param otherKeys The key events which are available to the browser & are not
+     *    included in one of the keySet constants
      *
      * @return The keyset for this application.
      */
