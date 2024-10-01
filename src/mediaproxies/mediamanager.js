@@ -323,6 +323,7 @@ hbbtv.mediaManager = (function() {
             'playing',
             'seeking',
             'seeked',
+            'ended',
             '__orb_onerror__',
             '__orb_onperiodchanged__',
             '__orb_onstreamupdated__',
