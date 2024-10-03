@@ -80,7 +80,7 @@ hbbtv.objects.TextTrack = (function() {
                             break;
                         }
                     }
-                    p.onTimeUpdate();
+                    p.onTimeUpdate.apply(this);
                     p.mediaElement.addEventListener('timeupdate', p.onTimeUpdate, true);
                 } else {
                     p.properties.activeCues.orb_clear();
@@ -118,19 +118,32 @@ hbbtv.objects.TextTrack = (function() {
         prototype[func] = makeEventTargetMethod(func);
     }
 
+    function resetCueUpdateTimeout(p) {
+        if (p.properties.onEnterExitTimeout) {
+            clearTimeout(p.properties.onEnterExitTimeout);
+            p.properties.onEnterExitTimeout = null;
+        }
+        p.properties.onEnterExitCurrentTime = -1;
+    }
+
     prototype.addCue = function(cue) {
         const p = privates.get(this);
+        resetCueUpdateTimeout(p);
         p.properties.cues.orb_addCue(cue);
+        updateCues(this);
     };
 
     prototype.removeCue = function(cue) {
         const p = privates.get(this);
+        resetCueUpdateTimeout(p);
         p.properties.cues.orb_removeCue(cue);
         p.properties.activeCues.orb_removeCue(cue);
+        updateCues(this);
     };
 
     prototype.orb_finalize = function() {
         const p = privates.get(this);
+        resetCueUpdateTimeout(p);
         p.proxy.unregisterObserver(p.observerId);
         p.activeCues.orb_clear();
         p.cues.orb_clear();
@@ -138,9 +151,67 @@ hbbtv.objects.TextTrack = (function() {
         privates.delete(this);
     };
 
+    function updateCues(thiz) {
+        const p = privates.get(thiz);
+        const time = p.mediaElement.currentTime;
+        resetCueUpdateTimeout(p);
+        if (p.properties.cues.length === 0) {
+            return;
+        }
+        let changed = false;
+        let nextEventTimestamp = Number.MAX_SAFE_INTEGER;
+        let nextEventCurrentTime;
+
+        /* Detect cues that need to be displayed and calculate next onenter event */
+        for (const cue of p.properties.cues) {
+            /* Early for loop exit possible ??? */
+            if (
+                cue.endTime >= time &&
+                cue.startTime <= time &&
+                p.properties.activeCues.orb_indexOf(cue) < 0
+            ) {
+                p.properties.activeCues.orb_addCue(cue);
+                if (p.properties.isIframe && (typeof cue.onenter === 'function')) {
+                    cue.onenter();
+                }
+                changed = true;
+            } else if (p.properties.isIframe && (cue.startTime > time)) {/* just relevant inside iframe */
+                const onEnterTimestamp = cue.startTime - time;
+                if (onEnterTimestamp < nextEventTimestamp) {
+                    nextEventTimestamp = onEnterTimestamp;
+                    nextEventCurrentTime = cue.startTime;
+                }
+            }
+        }
+
+        /* Detect activeCues that need to be removed and calculate next onexit event */
+        for (let i = p.properties.activeCues.length - 1; i >= 0; --i) {
+            const cue = p.properties.activeCues[i];
+            if (cue.endTime < time || cue.startTime > time) {
+                p.properties.activeCues.orb_removeCueAt(i);
+                if (p.properties.isIframe && (typeof cue.onexit === 'function')) {
+                    cue.onexit();
+                }
+                changed = true;
+            } else if (p.properties.isIframe) { /* just relevant inside iframe */
+                const onExitTimestamp = cue.endTime - time;
+                if (onExitTimestamp < nextEventTimestamp) {
+                    nextEventTimestamp = onExitTimestamp;
+                    nextEventCurrentTime = cue.endTime;
+                }
+            }
+        }
+
+        if (changed) {
+            thiz.dispatchEvent(new Event('cuechange'));
+        }
+        if (nextEventTimestamp !== Number.MAX_SAFE_INTEGER) {
+            p.properties.onEnterExitCurrentTime = nextEventCurrentTime;
+            p.properties.onEnterExitTimeout = setTimeout(updateCues, nextEventTimestamp * 1000, thiz);
+        }
+    }
+
     function initialise(mediaElement, proxy, id, kind, label, language, mode) {
-        const thiz = this;
-        const observerId = 'TextTrack_' + id;
         const properties = {
             id,
             kind,
@@ -151,8 +222,12 @@ hbbtv.objects.TextTrack = (function() {
             activeCues: hbbtv.objects.createTextTrackCueList(),
             mode: TRACK_MODE_DISABLED,
             default: false,
+            onEnterExitTimeout: null,
+            onEnterExitCurrentTime: -1,
+            isIframe: window.location.href.startsWith('orb://')
         };
 
+        const observerId = 'TextTrack_' + id;
         proxy.registerObserver(observerId, this);
 
         // We create a new Proxy object which we return in order to avoid ping-pong calls
@@ -203,34 +278,7 @@ hbbtv.objects.TextTrack = (function() {
             initialized: true,
             eventTarget: document.createDocumentFragment(),
             onTimeUpdate: (e) => {
-                const time = mediaElement.currentTime;
-                let changed = false;
-                for (let i = properties.activeCues.length - 1; i >= 0; --i) {
-                    const cue = properties.activeCues[i];
-                    if (cue.endTime < time || cue.startTime > time) {
-                        properties.activeCues.orb_removeCueAt(i);
-                        if (typeof cue.onexit === 'function') {
-                            cue.onexit();
-                        }
-                        changed = true;
-                    }
-                }
-                for (const cue of properties.cues) {
-                    if (
-                        cue.endTime >= time &&
-                        cue.startTime <= time &&
-                        properties.activeCues.orb_indexOf(cue) < 0
-                    ) {
-                        properties.activeCues.orb_addCue(cue);
-                        if (typeof cue.onenter === 'function') {
-                            cue.onenter();
-                        }
-                        changed = true;
-                    }
-                }
-                if (changed) {
-                    thiz.dispatchEvent(new Event('cuechange'));
-                }
+                updateCues(this);
             },
             properties,
             mediaElement,
@@ -238,6 +286,8 @@ hbbtv.objects.TextTrack = (function() {
             proxy,
             trackProxy,
         });
+
+        mediaElement.addEventListener('seeked', () => updateCues(this), true);
 
         this.mode = mode;
         return trackProxy;
