@@ -354,10 +354,10 @@ hbbtv.mediaManager.registerObject({
     },
     // TODO: add more extensions
     getSupportedExtensions: function() {
-        return ['mp4', 'mp3', 'wav', 'mpeg'];
+        return ['mp4', 'mp3', 'wav', 'mpeg', 'm3u8'];
     },
     // TODO: add more content types
     getSupportedContentTypes: function() {
-        return ['video/mp4', 'audio/mp4', 'audio/mpeg', 'video/mpeg'];
+        return ['video/mp4', 'audio/mp4', 'audio/mpeg', 'video/mpeg', 'application/vnd.apple.mpegurl'];
     },
 });
