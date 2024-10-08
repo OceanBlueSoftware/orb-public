@@ -1700,7 +1700,7 @@ hbbtv.objects.VideoBroadcast = (function() {
                 p.onServiceInstanceChanged = (event) => {
                     console.log('Received onServiceInstanceChanged');
                     console.log(event);
-                    privates.currentInstanceIndex = event.serviceInstanceIndex;
+                    p.currentInstanceIndex = event.serviceInstanceIndex;
                 };
             }
 
