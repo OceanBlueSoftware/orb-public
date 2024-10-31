@@ -232,6 +232,10 @@ class ApplicationManager {
         return jniGetApplicationScheme(appId);
     }
 
+    public String[] getRunningAppsUrls() {
+        return jniGetRunningAppsUrls();
+    }
+
     public void onNetworkAvailabilityChanged(boolean available) {
         jniOnNetworkAvailabilityChanged(available);
     }
@@ -280,6 +284,8 @@ class ApplicationManager {
     private native int[] jniGetOtherKeyValues(int appId);
 
     private native String jniGetApplicationScheme(int appId);
+
+    private native String[] jniGetRunningAppsUrls();
 
     private native boolean jniInKeySet(int appId, int keyCode);
 

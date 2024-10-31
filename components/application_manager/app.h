@@ -29,54 +29,129 @@
 #include "utils.h"
 #include "ait.h"
 
+#define INVALID_APP_ID 0
+
 class App
 {
 public:
-    /**
-     *
-     * @param url
-     */
-    static App CreateAppFromUrl(const std::string &url);
+    typedef enum
+    {
+        HBBTV_APP_TYPE,
+        OPAPP_TYPE
+    } E_APP_TYPE;
 
-    static App CreateAppFromAitDesc(const Ait::S_AIT_APP_DESC *desc,
+    typedef enum
+    {
+        FOREGROUND_STATE = 1,
+        BACKGROUND_STATE = 1 << 1,
+        TRANSIENT_STATE = 1 << 2,
+        OVERLAID = 1 << 3, // only for use with other states as below
+        OVERLAID_FOREGROUND_STATE = OVERLAID | FOREGROUND_STATE,
+        OVERLAID_TRANSIENT_STATE = OVERLAID | TRANSIENT_STATE
+    } E_APP_STATE;
+
+    /**
+     * Create app from url
+     */
+    App(const std::string &url);
+
+    /**
+     * Create app from Ait description
+     */
+    App(const Ait::S_AIT_APP_DESC &desc,
         const Utils::S_DVB_TRIPLET currentService,
         bool isNetworkAvailable,
         const std::string &urlParams,
         bool isBroadcast,
         bool isTrusted);
+    
+    App(const App &other);
 
-    std::string getScheme() const;
-    void setScheme(std::string value);
+    virtual ~App() = default;
 
-    std::string entryUrl;
+    void Update(const Ait::S_AIT_APP_DESC &desc, bool isNetworkAvailable);
+
+    virtual bool TransitionToBroadcastRelated();
+    virtual bool TransitionToBroadcastIndependent();
+
+    Utils::S_DVB_TRIPLET GetService() const { return m_service; }
+    std::string GetScheme() const;
+
+    std::string GetEntryUrl() const { return m_entryUrl; }
+    std::string GetBaseUrl() const { return m_baseUrl; }
+    std::map<uint32_t, std::string> GetNames() const { return m_names; }
+
+    uint16_t GetProtocolId() const { return m_protocolId; }
+    
+    bool IsTrusted() const { return m_isTrusted; }
+    bool IsBroadcast() const { return m_isBroadcast; }
+
+    uint8_t GetVersionMinor() const { return m_versionMinor; }
+
+    Ait::S_AIT_APP_DESC GetAitDescription() const { return m_aitDesc; }
+
+    /**
+     * Get the key set mask for an application.
+     *
+     * @return The key set mask for the application.
+     */
+    uint16_t GetKeySetMask() const { return m_keySetMask; }
+
+    /**
+     * Set the key set mask for an application.
+     *
+     * @param keySetMask The key set mask.
+     * @param otherKeys optional other keys
+     * @return The key set mask for the application.
+     */
+    uint16_t SetKeySetMask(uint16_t keySetMask, const std::vector<uint16_t> &otherKeys);
+
+    /**
+     * Check the key code is accepted by the current key mask. Activate the app as a result if the
+     * key is accepted.
+     *
+     * @param appId The application.
+     * @param keyCode The key code to check.
+     * @return The supplied key_code is accepted by the current app's key set.
+     */
+    virtual bool InKeySet(uint16_t keyCode);
+
+    virtual E_APP_TYPE GetType() const { return HBBTV_APP_TYPE; }
+
+    E_APP_STATE GetState() const { return m_state; }
+    
+    virtual void SetState(const E_APP_STATE &state);
+
+    /**
+     * Get the other keys for an application.
+     *
+     * @param appId The application.
+     * @return The other keys for the application.
+     */
+    std::vector<uint16_t> GetOtherKeyValues() const { return m_otherKeys; }
+
     std::string loadedUrl;
-    std::string baseUrl;
 
-    uint16_t protocolId;
-    uint8_t controlCode;
-    uint32_t orgId;
-    uint16_t appId;
+protected:
+    uint16_t m_keySetMask = 0;
+    std::vector<uint16_t> m_otherKeys;
 
-    uint16_t keySetMask;
-    std::vector<uint16_t> otherKeys;
+    std::string m_entryUrl;
+    std::string m_baseUrl;
+    Utils::S_DVB_TRIPLET m_service = Utils::MakeInvalidDvbTriplet();
+    uint16_t m_protocolId = 0;
 
-    bool isTrusted;
-    bool isBroadcast;
-    bool isServiceBound;
-    bool isHidden;
-
-    std::vector<std::string> boundaries;
-    std::map<uint32_t, std::string> names;
-
-    bool isRunning = false;
     /* Activated by default. Deactivate if they are AUTOSTARTED */
-    bool isActivated = true;
-    uint16_t id;
-    std::vector<Ait::S_APP_PARENTAL_RATING> parentalRatings;
-    std::vector<uint16_t> graphicsConstraints;
-    uint8_t versionMinor;
-private:
+    bool m_isActivated = true;
+    bool m_isTrusted = false;
+    bool m_isBroadcast = false;
+
+    Ait::S_AIT_APP_DESC m_aitDesc;
+    std::map<uint32_t, std::string> m_names;
+
     std::string m_scheme;
+    uint8_t m_versionMinor = 0;
+    E_APP_STATE m_state = FOREGROUND_STATE;
 };
 
 #endif // HBBTV_SERVICE_APP_H

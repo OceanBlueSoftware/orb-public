@@ -175,6 +175,12 @@ public:
         env->DeleteLocalRef(j_appType);
     }
 
+    // TODO: Implement
+    void DispatchOperatorApplicationStateChange(const std::string &oldState, const std::string &newState) { }
+    void DispatchOperatorApplicationStateChangeCompleted(const std::string &oldState, const std::string &newState) { }
+    void DispatchOperatorApplicationContextChange(const std::string &startupLocation, const std::string &launchLocation = "") { }
+    void DispatchOpAppUpdate(const std::string &updateEvent) { }
+
     virtual bool isInstanceInCurrentService(const Utils::S_DVB_TRIPLET &triplet) {
         JNIEnv *env = JniUtils::GetEnv();
         return env->CallBooleanMethod(mJavaCbObject, gCb[CB_IS_INSTANCES_OF_CURRENT_SERVICE], triplet.originalNetworkId, triplet.transportStreamId, triplet.serviceId);
@@ -250,7 +256,7 @@ JNIEXPORT jboolean JNICALL Java_org_orbtv_orblibrary_ApplicationManager_jniCreat
     jint calling_app_id, jstring j_url)
 {
     std::string url = JniUtils::MakeStdString(env, j_url);
-    return GetManager(env, object)->CreateApplication(calling_app_id, url);
+    return GetManager(env, object)->CreateApplication(calling_app_id, url, false);
 }
 
 extern "C"
@@ -331,6 +337,22 @@ JNIEXPORT jstring JNICALL Java_org_orbtv_orblibrary_ApplicationManager_jniGetApp
                                                                                      jint calling_app_id)
 {
     return env->NewStringUTF(GetManager(env, object)->GetApplicationScheme(calling_app_id).c_str());
+}
+
+extern "C"
+JNIEXPORT jobjectArray JNICALL Java_org_orbtv_orblibrary_ApplicationManager_jniGetRunningAppsUrls(JNIEnv *env,
+                                                                                     jobject object)
+{
+    std::vector<std::string> urls = GetManager(env, object)->GetRunningAppsUrls();
+    jclass stringClass = env->FindClass("java/lang/String");
+    jobjectArray javaStringArray = env->NewObjectArray(urls.size(), stringClass, nullptr);
+
+    for (size_t i = 0; i < urls.size(); ++i) {
+        jstring javaString = env->NewStringUTF(urls[i].c_str());
+        env->SetObjectArrayElement(javaStringArray, i, javaString);
+        env->DeleteLocalRef(javaString);
+    }
+    return javaStringArray;
 }
 
 extern "C"

@@ -260,7 +260,12 @@ std::string SessionCallbackImpl::GetParentalControlRegion3()
     return ORBEngine::GetSharedInstance().GetORBPlatform()->ParentalControl_GetRegion3();
 }
 
+// TODO: Implement
 void SessionCallbackImpl::DispatchApplicationSchemeUpdatedEvent(const std::string &scheme) { }
+void SessionCallbackImpl::DispatchOperatorApplicationStateChange(const std::string &oldState, const std::string &newState) { }
+void SessionCallbackImpl::DispatchOperatorApplicationStateChangeCompleted(const std::string &oldState, const std::string &newState) { }
+void SessionCallbackImpl::DispatchOperatorApplicationContextChange(const std::string &startupLocation, const std::string &launchLocation) { }
+void SessionCallbackImpl::DispatchOpAppUpdate(const std::string &updateEvent) { }
 
 /**
  * Returns true if the provided triplet is in an instance within the

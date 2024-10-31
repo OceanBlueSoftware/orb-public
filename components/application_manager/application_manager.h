@@ -27,12 +27,11 @@
 #include <cstdint>
 #include <alloca.h>
 #include <mutex>
+#include <unordered_map>
 
 #include "utils.h"
 #include "ait.h"
-#include "app.h"
-
-#define INVALID_APP_ID 0
+#include "opapp.h"
 
 class ApplicationManager {
 public:
@@ -100,6 +99,16 @@ public:
          */
         virtual void DispatchTransitionedToBroadcastRelatedEvent() = 0;
 
+        virtual void DispatchApplicationSchemeUpdatedEvent(const std::string &scheme) = 0;
+
+        virtual void DispatchOperatorApplicationStateChange(const std::string &oldState, const std::string &newState) = 0;
+
+        virtual void DispatchOperatorApplicationStateChangeCompleted(const std::string &oldState, const std::string &newState) = 0;
+
+        virtual void DispatchOperatorApplicationContextChange(const std::string &startupLocation, const std::string &launchLocation = "") = 0;
+
+        virtual void DispatchOpAppUpdate(const std::string &updateEvent) = 0;
+
         /**
          * Perform a HTTP GET request and return the contents, which should be an XML AIT resource.
          *
@@ -113,8 +122,6 @@ public:
         virtual std::string GetParentalControlRegion() = 0;
 
         virtual std::string GetParentalControlRegion3() = 0;
-
-        virtual void DispatchApplicationSchemeUpdatedEvent(const std::string &scheme) = 0;
 
         /**
          * Returns true if the provided triplet is in an instance within the
@@ -154,7 +161,7 @@ public:
      *
      * @return true if the application can be created, otherwise false
      */
-    bool CreateApplication(uint16_t callingAppId, const std::string &url);
+    bool CreateApplication(uint16_t callingAppId, const std::string &url, bool runAsOpApp = false);
 
     /**
      * Destroy the calling application.
@@ -272,6 +279,20 @@ public:
      */
     std::map<std::string, std::string> GetCurrentAppNames();
 
+    std::vector<std::string> GetRunningAppsUrls();
+
+    bool OpAppRequestTransient();
+
+    bool OpAppRequestForeground();
+
+    void OpAppRequestBackground();
+
+    void OpAppRequestUpdate(bool immediate, const std::string &params = "");
+
+    int OpAppUpdateStatus();
+
+    bool OpAppUninstall();
+
     /**
      * Called when broadcast is stopped (for example when v/b object setChannel is called with null).
      *
@@ -353,10 +374,12 @@ private:
      */
     bool RunApp(const App &app);
 
+    bool RunApp(const OpApp &app);
+
     /**
      * Kill the running app.
      */
-    void KillRunningApp();
+    void KillRunningApp(uint16_t appid);
 
     /**
      * Transition the running app to broadcast-related, if conditions permit.
@@ -388,18 +411,13 @@ private:
      */
     const Ait::S_AIT_APP_DESC* GetAutoStartApp(const Ait::S_AIT_TABLE *aitTable);
 
-    /**
-     * Return the KeySet a key code belongs to.
-     *
-     * @param keyCode The key code.
-     * @return The key set.
-     */
-    uint16_t GetKeySet(const uint16_t keyCode);
+    void OpAppStateChangeHandler(const OpApp *app);
 
     std::unique_ptr<SessionCallback> m_sessionCallback;
-    uint16_t m_nextAppId;
     Ait m_ait;
-    App m_app;
+    std::unordered_map<uint16_t, std::unique_ptr<App>> m_apps;
+    uint16_t m_appId = INVALID_APP_ID;
+    uint16_t m_opappId = INVALID_APP_ID;
     Utils::S_DVB_TRIPLET m_currentService = Utils::MakeInvalidDvbTriplet();
     Utils::S_DVB_TRIPLET m_previousService = Utils::MakeInvalidDvbTriplet();
     uint16_t m_currentServiceReceivedFirstAit = false;
@@ -407,6 +425,8 @@ private:
     bool m_isNetworkAvailable = false;
     std::recursive_mutex m_lock;
     Utils::Timeout m_aitTimeout;
+
+    //Utils::Timeout myTimeout; // TODO: REMOVE ME
 };
 
 #endif // HBBTV_SERVICE_MANAGER_H

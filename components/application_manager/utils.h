@@ -43,9 +43,9 @@ public:
 
     typedef struct
     {
-        uint16_t originalNetworkId;
-        uint16_t transportStreamId;
-        uint16_t serviceId;
+        uint16_t originalNetworkId = 0;
+        uint16_t transportStreamId = 0;
+        uint16_t serviceId = 0;
     } S_DVB_TRIPLET;
 
     struct CreateLocatorInfo
@@ -126,9 +126,8 @@ public:
 
     class Timeout {
 public:
-        Timeout(std::function<void(void)> callback, std::chrono::milliseconds timeout) :
+        Timeout(std::function<void(void)> callback) :
             m_callback(callback),
-            m_timeout(timeout),
             m_stopped(true)
         {
         }
@@ -142,14 +141,15 @@ public:
 
         Timeout& operator=(const Timeout&) = delete;
 
-        void start()
+        void start(std::chrono::milliseconds timeout)
         {
             stop();
+            m_startTimestamp = std::chrono::system_clock::now();
             m_stopped = false;
-            m_thread = std::thread([&]
+            m_thread = std::thread([&, timeout]
             {
                 std::unique_lock<std::mutex> lock(m_cvm);
-                if (!m_cv.wait_for(lock, m_timeout, [&] {
+                if (!m_cv.wait_for(lock, timeout, [&] {
                     return m_stopped;
                 }))
                 {
@@ -172,13 +172,29 @@ public:
             }
         }
 
+        std::chrono::milliseconds elapsed() const
+        {
+            std::lock_guard<std::mutex> lock(m_cvm);
+            if (m_stopped)
+            {
+                return std::chrono::milliseconds(0);
+            }
+            return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startTimestamp);
+        }
+
+        bool isStopped() const
+        {
+            std::lock_guard<std::mutex> lock(m_cvm);
+            return m_stopped;
+        }
+
 private:
         std::function<void(void)> m_callback;
-        std::chrono::milliseconds m_timeout;
         bool m_stopped;
         std::thread m_thread;
         std::condition_variable m_cv;
-        std::mutex m_cvm;
+        mutable std::mutex m_cvm;
+        std::chrono::system_clock::time_point m_startTimestamp;
     };
 };
 

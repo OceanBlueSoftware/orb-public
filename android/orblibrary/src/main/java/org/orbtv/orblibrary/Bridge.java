@@ -692,6 +692,10 @@ class Bridge extends AbstractBridge {
         return mApplicationManager.getApplicationScheme(token.getAppId());
     }
 
+    protected String[] Manager_getRunningAppsUrls(BridgeToken token) {
+        return mApplicationManager.getRunningAppsUrls();
+    }
+
     /**
      * Get a list of rating schemes supported by this integration.
      *

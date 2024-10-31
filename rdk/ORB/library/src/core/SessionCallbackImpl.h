@@ -136,6 +136,14 @@ public:
     virtual std::string GetParentalControlRegion3() override;
 
     virtual void DispatchApplicationSchemeUpdatedEvent(const std::string &scheme) override;
+
+    virtual void DispatchOperatorApplicationStateChange(const std::string &oldState, const std::string &newState) override;
+
+    virtual void DispatchOperatorApplicationStateChangeCompleted(const std::string &oldState, const std::string &newState) override;
+
+    virtual void DispatchOperatorApplicationContextChange(const std::string &startupLocation, const std::string &launchLocation = "") override;
+
+    virtual void DispatchOpAppUpdate(const std::string &updateEvent) override;
     
     /**
      * Returns true if the provided triplet is in an instance within the

@@ -933,6 +933,15 @@ public abstract class AbstractBridge {
     protected abstract String Manager_getApplicationScheme(BridgeToken token);
 
     /**
+     * Get the currently running applications' urls.
+     *
+     * @param token The token associated with this request.
+     *
+     * @return The currently running applications' urls.
+     */
+    protected abstract String[] Manager_getRunningAppsUrls(BridgeToken token);
+
+    /**
      * Get a list of rating schemes supported by this integration.
      *
      * @param token The token associated with this request.
@@ -1832,6 +1841,12 @@ public abstract class AbstractBridge {
             case "Manager.getApplicationScheme": {
                 String result = Manager_getApplicationScheme(token);
                 response.put("result", result);
+                break;
+            }
+
+            case "Manager.getRunningAppsUrls": {
+                String[] result = Manager_getRunningAppsUrls(token);
+                response.put("result", new JSONArray(result));
                 break;
             }
 

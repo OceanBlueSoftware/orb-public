@@ -20,13 +20,9 @@ hbbtv.objects.ApplicationManager = (function() {
     const prototype = Object.create(HTMLObjectElement.prototype);
     const privates = new WeakMap();
     const gGarbageCollectionBlocked = new Set();
-    const LINKED_APP_SCHEME_1_2 = "urn:dvb:metadata:cs:LinkedApplicationCS:2019:1.2";
-    const LINKED_APP_SCHEME_2 = "urn:dvb:metadata:cs:LinkedApplicationCS:2019:2";
 
     prototype.getOwnerApplication = function(page) {
-        return hbbtv.objects.createApplication({
-            disabled: false,
-        });
+        return hbbtv.objects.Application.getOwnerApplication(page);
     };
 
     // DOM level 1 event methods
@@ -88,6 +84,7 @@ hbbtv.objects.ApplicationManager = (function() {
         p.onApplicationLoadError = (event) => {
             console.log('Application load error!');
             const ev = new Event('ApplicationLoadError');
+            // TODO: assign the actual application that triggered the event (by its id maybe?)
             Object.assign(ev, {
                 appl: hbbtv.objects.createApplication({
                     disabled: true,
@@ -96,35 +93,26 @@ hbbtv.objects.ApplicationManager = (function() {
             privates.get(this).eventDispatcher.dispatchEvent(ev);
         };
         hbbtv.bridge.addWeakEventListener('ApplicationLoadError', p.onApplicationLoadError);
-
-        p.onApplicationSchemeUpdated = (event) => {
-            console.log('onApplicationSchemeUpdated', event.scheme);
-            const currentURL = new URL(window.location.href);
-            switch (event.scheme) {
-                case LINKED_APP_SCHEME_1_2:
-                    currentURL.searchParams.set("lloc", "service");
-                    break;
-                case LINKED_APP_SCHEME_2:
-                    currentURL.searchParams.set("lloc", "availability");
-                    break;
-                default:
-                    return;
-            }
-            window.history.replaceState(null, null, currentURL);
-        };
-        hbbtv.bridge.addWeakEventListener('ApplicationSchemeUpdated', p.onApplicationSchemeUpdated);
     }
 
     function initialise() {
-        privates.set(this, {});
-        const p = privates.get(this);
-        p.eventDispatcher = new hbbtv.utils.EventDispatcher(this);
+        privates.set(this, {
+            eventDispatcher: new hbbtv.utils.EventDispatcher(this)
+        });
+        for (var app of hbbtv.bridge.manager.getRunningAppsUrls())
+        {
+            console.log("ApplicationManager: Create application with url:", app);
+            hbbtv.objects.createApplication({
+                url: app,
+                disabled: document.documentURI !== app
+            });
+        }
         addBridgeEventListeners.call(this);
     }
 
     return {
         prototype: prototype,
-        initialise: initialise,
+        initialise: initialise
     };
 })();
 

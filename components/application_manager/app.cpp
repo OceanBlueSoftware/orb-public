@@ -21,110 +21,267 @@
 #include "app.h"
 #include "log.h"
 
+#include <stdexcept>
+
+#define KEY_SET_RED 0x1
+#define KEY_SET_GREEN 0x2
+#define KEY_SET_YELLOW 0x4
+#define KET_SET_BLUE 0x8
+#define KEY_SET_NAVIGATION 0x10
+#define KEY_SET_VCR 0x20
+#define KEY_SET_SCROLL 0x40
+#define KEY_SET_INFO 0x80
+#define KEY_SET_NUMERIC 0x100
+#define KEY_SET_ALPHA 0x200
+#define KEY_SET_OTHER 0x400
+
+#define VK_RED 403
+#define VK_GREEN 404
+#define VK_YELLOW 405
+#define VK_BLUE 406
+#define VK_UP 38
+#define VK_DOWN 40
+#define VK_LEFT 37
+#define VK_RIGHT 39
+#define VK_ENTER 13
+#define VK_BACK 461
+#define VK_PLAY 415
+#define VK_STOP 413
+#define VK_PAUSE 19
+#define VK_FAST_FWD 417
+#define VK_REWIND 412
+#define VK_NEXT 425
+#define VK_PREV 424
+#define VK_PLAY_PAUSE 402
+#define VK_RECORD 416
+#define VK_PAGE_UP 33
+#define VK_PAGE_DOWN 34
+#define VK_INFO 457
+#define VK_NUMERIC_START 48
+#define VK_NUMERIC_END 57
+#define VK_ALPHA_START 65
+#define VK_ALPHA_END 90
+
 static std::string getAppSchemeFromUrlParams(const std::string &urlParams);
 static std::string getUrlParamsFromAppScheme(const std::string &scheme);
 
-App App::CreateAppFromUrl(const std::string &url)
+/**
+ * Return the KeySet a key code belongs to.
+ *
+ * @param keyCode The key code.
+ * @return The key set.
+ */
+static uint16_t GetKeySetMaskForKeyCode(const uint16_t &keyCode);
+
+static bool IsKeyNavigation(const uint16_t &code);
+static bool IsKeyNumeric(const uint16_t &code);
+static bool IsKeyAlpha(const uint16_t &code);
+static bool IsKeyVcr(const uint16_t &code);
+static bool IsKeyScroll(const uint16_t &code);
+
+App::App(const std::string &url)
+    : loadedUrl(url), m_entryUrl(url), m_baseUrl(url)
 {
-    App app;
-
-    app.baseUrl = url;
-    app.entryUrl = url;
-    app.loadedUrl = url;
-
-    app.protocolId = 0;
-    app.controlCode = 0;
-    app.orgId = 0;
-    app.appId = 0;
-
-    app.keySetMask = 0;
-    app.otherKeys = std::vector<uint16_t>();
-
-    app.isTrusted = false;
-    app.isBroadcast = false;
-    app.isServiceBound = false;
-    app.isHidden = false;
-
-    app.isRunning = !app.entryUrl.empty();
-    app.setScheme(getAppSchemeFromUrlParams(url));
-
-    return app;
+    if (url.empty())
+    {
+        throw std::runtime_error("[App]: Provided url should not be empty.");
+    }
+    m_scheme = getAppSchemeFromUrlParams(url);
 }
 
-App App::CreateAppFromAitDesc(const Ait::S_AIT_APP_DESC *desc,
+App::App(const Ait::S_AIT_APP_DESC &desc,
     const Utils::S_DVB_TRIPLET currentService,
     bool isNetworkAvailable,
     const std::string &urlParams,
     bool isBroadcast,
     bool isTrusted)
+        : m_service(currentService),
+        m_isTrusted(isTrusted),
+        m_isBroadcast(isBroadcast),
+        m_versionMinor(INT8_MAX)
 {
-    App app;
-    app.versionMinor = INT8_MAX;
+    m_baseUrl = Ait::ExtractBaseURL(desc, m_service, isNetworkAvailable);
+    m_entryUrl = Utils::MergeUrlParams(m_baseUrl, desc.location, urlParams);
+    loadedUrl = m_entryUrl;
+    Update(desc, isNetworkAvailable);
+}
 
-    app.baseUrl = Ait::GetBaseURL(desc, currentService, isNetworkAvailable, &app.protocolId);
+App::App(const App &other)
+    : loadedUrl(other.loadedUrl),
+    m_keySetMask(other.m_keySetMask),
+    m_otherKeys(other.m_otherKeys),
+    m_entryUrl(other.m_entryUrl),
+    m_baseUrl(other.m_baseUrl),
+    m_service(other.m_service),
+    m_protocolId(other.m_protocolId),
+    m_isActivated(other.m_isActivated),
+    m_isTrusted(other.m_isTrusted),
+    m_isBroadcast(other.m_isBroadcast),
+    m_aitDesc(other.m_aitDesc),
+    m_names(other.m_names),
+    m_scheme(other.m_scheme),
+    m_versionMinor(other.m_versionMinor),
+    m_state(other.m_state)
+{ }
 
-    app.entryUrl = Utils::MergeUrlParams(app.baseUrl, desc->location, urlParams);
-    app.loadedUrl = app.entryUrl;
+void App::Update(const Ait::S_AIT_APP_DESC &desc, bool isNetworkAvailable)
+{
+    m_protocolId = Ait::ExtractProtocolId(desc, isNetworkAvailable);
+    m_aitDesc = desc;
 
-    app.controlCode = desc->controlCode;
-    app.orgId = desc->orgId;
-    app.appId = desc->appId;
-    app.graphicsConstraints = desc->graphicsConstraints;
-
-    app.keySetMask = 0;
-    app.otherKeys = std::vector<uint16_t>();
-
-    app.isTrusted = isTrusted;
-    app.isBroadcast = isBroadcast;
-    app.isServiceBound = desc->appDesc.serviceBound;
-    app.isHidden = isBroadcast; // Broadcast-related applications need to call show.
-    app.parentalRatings = desc->parentalRatings;
-
-    for (uint8_t i = 0; i < desc->appDesc.appProfiles.size(); i++)
+    for (uint8_t i = 0; i < desc.appDesc.appProfiles.size(); i++)
     {
-        if (app.versionMinor >= desc->appDesc.appProfiles[i].versionMinor)
+        if (m_versionMinor >= desc.appDesc.appProfiles[i].versionMinor)
         {
-            app.versionMinor = desc->appDesc.appProfiles[i].versionMinor;
+            m_versionMinor = desc.appDesc.appProfiles[i].versionMinor;
         }
+    }
+    m_names.clear();
+    for (uint8_t i = 0; i < desc.appName.numLangs; i++)
+    {
+        m_names[desc.appName.names[i].langCode] = desc.appName.names[i].name;
     }
 
     /* AUTOSTARTED apps are activated when they receive a key event */
-    app.isActivated = !(desc->controlCode == Ait::APP_CTL_AUTOSTART);
-
-    for (uint8_t i = 0; i < desc->appName.numLangs; i++)
+    m_isActivated = !(desc.controlCode == Ait::APP_CTL_AUTOSTART);
+    m_scheme = desc.scheme;
+    if (!m_scheme.empty())
     {
-        app.names[desc->appName.names[i].langCode] = desc->appName.names[i].name;
-    }
-
-    app.setScheme(desc->scheme);
-    if (!desc->scheme.empty())
-    {
-        size_t index = desc->scheme.find('?');
-        app.setScheme(desc->scheme.substr(0, index));
-        app.entryUrl = Utils::MergeUrlParams("", app.entryUrl,
-                                             getUrlParamsFromAppScheme(app.getScheme()));
+        size_t index = desc.scheme.find('?');
+        m_scheme = m_scheme.substr(0, index);
+        loadedUrl = Utils::MergeUrlParams("", loadedUrl,
+                                             getUrlParamsFromAppScheme(GetScheme()));
         if (index != std::string::npos) {
-            std::string llocParams = desc->scheme.substr(index);
-            app.entryUrl = Utils::MergeUrlParams("", app.entryUrl, llocParams);
+            std::string llocParams = desc.scheme.substr(index);
+            loadedUrl = Utils::MergeUrlParams("", m_entryUrl, llocParams);
         }
-        app.loadedUrl = app.entryUrl;
     }
-
-    return app;
+    LOG(LOG_DEBUG, "App[%d] properties: orgId=%d, controlCode=%d, protocolId=%d, baseUrl=%s, entryUrl=%s, loadedUrl=%s",
+            m_aitDesc.appId, m_aitDesc.orgId, m_aitDesc.controlCode, m_protocolId, m_baseUrl.c_str(), m_entryUrl.c_str(), loadedUrl.c_str());
 }
 
-std::string App::getScheme() const {
+bool App::TransitionToBroadcastRelated()
+{
+    if (m_aitDesc.controlCode != Ait::APP_CTL_AUTOSTART && m_aitDesc.controlCode != Ait::APP_CTL_PRESENT)
+    {
+        LOG(LOG_INFO,
+            "Cannot transition to broadcast (app is not signalled in the new AIT as AUTOSTART or PRESENT)");
+        return false;
+    }
+
+    if (m_protocolId == AIT_PROTOCOL_HTTP)
+    {
+        if (!Utils::CheckBoundaries(m_entryUrl, m_baseUrl, m_aitDesc.boundaries))
+        {
+            LOG(LOG_INFO, "Cannot transition to broadcast (entry URL is not in boundaries)");
+            return false;
+        }
+        if (!Utils::CheckBoundaries(loadedUrl, m_baseUrl, m_aitDesc.boundaries))
+        {
+            LOG(LOG_INFO, "Cannot transition to broadcast (loaded URL is not in boundaries)");
+            return false;
+        }
+    }
+    else
+    {
+        LOG(LOG_INFO, "Cannot transition to broadcast (invalid protocol id)");
+        return false;
+    }
+
+    m_isBroadcast = true;
+    return true;
+}
+
+bool App::TransitionToBroadcastIndependent()
+{
+    m_isBroadcast = false;
+    return true;
+}
+
+std::string App::GetScheme() const {
     if (!m_scheme.empty()) {
         return m_scheme;
     }
     return LINKED_APP_SCHEME_1_1;
 }
 
-void App::setScheme(std::string value) {
-    m_scheme = value;
+/**
+ * Set the key set mask for an application.
+ *
+ * @param keySetMask The key set mask.
+ * @param otherKeys optional other keys
+ * @return The key set mask for the application.
+ */
+uint16_t App::SetKeySetMask(uint16_t keySetMask, const std::vector<uint16_t> &otherKeys) {
+    std::string currentScheme = GetScheme();
+
+    // Compatibility check for older versions
+    bool isOldVersion = m_versionMinor > 1; 
+    bool isLinkedAppScheme12 = currentScheme == LINKED_APP_SCHEME_1_2;
+
+    // Key events VK_STOP, VK_PLAY, VK_PAUSE, VK_PLAY_PAUSE, VK_FAST_FWD,
+    // VK_REWIND and VK_RECORD shall always be available to linked applications 
+    // that are controlling media presentation without requiring the application 
+    // to be activated first (2.0.4, App. O.7)
+    bool isException = isLinkedAppScheme12 && m_versionMinor == 7;
+
+    if (!m_isActivated && currentScheme != LINKED_APP_SCHEME_2) {
+        if ((keySetMask & KEY_SET_VCR) != 0 && isOldVersion && !isException) {
+            keySetMask &= ~KEY_SET_VCR;
+        }
+        if ((keySetMask & KEY_SET_NUMERIC) != 0 && !isLinkedAppScheme12 && isOldVersion) {
+            keySetMask &= ~KEY_SET_NUMERIC;
+        }
+        if ((keySetMask & KEY_SET_OTHER) != 0 && !isLinkedAppScheme12 && isOldVersion) {
+            keySetMask &= ~KEY_SET_OTHER;
+        }
+    }
+
+    m_keySetMask = keySetMask;
+    if ((keySetMask & KEY_SET_OTHER) != 0) {
+        m_otherKeys = otherKeys; // Survived all checks
+    }
+
+    return keySetMask;
 }
 
-std::string getAppSchemeFromUrlParams(const std::string &urlParams)
+/**
+ * Check the key code is accepted by the current key mask. Activate the app as a result if the
+ * key is accepted.
+ *
+ * @param appId The application.
+ * @param keyCode The key code to check.
+ * @return The supplied key_code is accepted by the current app's key set.
+ */
+bool App::InKeySet(uint16_t keyCode)
+{
+    if ((m_keySetMask & GetKeySetMaskForKeyCode(keyCode)) != 0)
+    {
+        if ((m_keySetMask & KEY_SET_OTHER) != 0) {
+            auto it = std::find(m_otherKeys.begin(), m_otherKeys.end(), keyCode);
+            if (it == m_otherKeys.end()) {
+                return false;
+            }
+        }
+        if (!m_isActivated)
+        {
+            m_isActivated = true;
+        }
+        return true;
+    }
+    return false;
+}
+
+void App::SetState(const E_APP_STATE &state)
+{
+    // HbbTV apps can go only to background or foreground state
+    if (state == BACKGROUND_STATE || state == FOREGROUND_STATE)
+    {
+        m_state = state;
+    }
+}
+
+static std::string getAppSchemeFromUrlParams(const std::string &urlParams)
 {
     if (urlParams.find("lloc=service") != std::string::npos)
     {
@@ -137,7 +294,7 @@ std::string getAppSchemeFromUrlParams(const std::string &urlParams)
     return LINKED_APP_SCHEME_1_1;
 }
 
-std::string getUrlParamsFromAppScheme(const std::string &scheme)
+static std::string getUrlParamsFromAppScheme(const std::string &scheme)
 {
     if (scheme == LINKED_APP_SCHEME_1_2)
     {
@@ -148,4 +305,98 @@ std::string getUrlParamsFromAppScheme(const std::string &scheme)
         return "?lloc=availability";
     }
     return "";
+}
+
+/**
+ * Return the KeySet a key code belongs to.
+ *
+ * @param keyCode The key code.
+ * @return The key set.
+ */
+static uint16_t GetKeySetMaskForKeyCode(const uint16_t &keyCode)
+{
+    if (IsKeyNavigation(keyCode))
+    {
+        return KEY_SET_NAVIGATION;
+    }
+    else if (IsKeyNumeric(keyCode))
+    {
+        return KEY_SET_NUMERIC;
+    }
+    else if (IsKeyAlpha(keyCode))
+    {
+        return KEY_SET_ALPHA;
+    }
+    else if (IsKeyVcr(keyCode))
+    {
+        return KEY_SET_VCR;
+    }
+    else if (IsKeyScroll(keyCode))
+    {
+        return KEY_SET_SCROLL;
+    }
+    else if (keyCode == VK_RED)
+    {
+        return KEY_SET_RED;
+    }
+    else if (keyCode == VK_GREEN)
+    {
+        return KEY_SET_GREEN;
+    }
+    else if (keyCode == VK_YELLOW)
+    {
+        return KEY_SET_YELLOW;
+    }
+    else if (keyCode == VK_BLUE)
+    {
+        return KET_SET_BLUE;
+    }
+    else if (keyCode == VK_INFO)
+    {
+        return KEY_SET_INFO;
+    }
+    else if (keyCode == VK_RECORD)
+    {
+        return KEY_SET_OTHER;
+    }
+
+    return 0;
+}
+
+static bool IsKeyNavigation(const uint16_t &code)
+{
+    return code == VK_UP ||
+           code == VK_DOWN ||
+           code == VK_LEFT ||
+           code == VK_RIGHT ||
+           code == VK_ENTER ||
+           code == VK_BACK;
+}
+
+static bool IsKeyNumeric(const uint16_t &code)
+{
+    return code >= VK_NUMERIC_START && code <= VK_NUMERIC_END;
+}
+
+static bool IsKeyAlpha(const uint16_t &code)
+{
+    return code >= VK_ALPHA_START && code <= VK_ALPHA_END;
+}
+
+static bool IsKeyVcr(const uint16_t &code)
+{
+    return code == VK_PLAY ||
+           code == VK_STOP ||
+           code == VK_PAUSE ||
+           code == VK_FAST_FWD ||
+           code == VK_REWIND ||
+           code == VK_NEXT ||
+           code == VK_PREV ||
+           code == VK_PLAY_PAUSE;
+}
+
+static bool IsKeyScroll(const uint16_t &code)
+{
+    return code == VK_PAGE_UP ||
+           code == VK_PAGE_DOWN;
 }
