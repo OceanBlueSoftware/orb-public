@@ -50,10 +50,25 @@ public:
         OVERLAID_TRANSIENT_STATE = OVERLAID | TRANSIENT_STATE
     } E_APP_STATE;
 
+    class SessionCallback
+    {
+public:
+        virtual void ShowApplication(uint16_t appId) = 0;
+        virtual void HideApplication(uint16_t appId) = 0;
+        virtual void DispatchTransitionedToBroadcastRelatedEvent(uint16_t appId) = 0;
+        virtual void DispatchApplicationSchemeUpdatedEvent(uint16_t appId, const std::string &scheme) = 0;
+        virtual int GetParentalControlAge() = 0;
+        virtual std::string GetParentalControlRegion() = 0;
+        virtual std::string GetParentalControlRegion3() = 0;
+        virtual ~SessionCallback() = default;
+private:
+        uint16_t m_id = INVALID_APP_ID;
+    };
+
     /**
      * Create app from url
      */
-    App(const std::string &url);
+    App(const std::string &url, std::shared_ptr<SessionCallback> sessionCallback);
 
     /**
      * Create app from Ait description
@@ -63,9 +78,11 @@ public:
         bool isNetworkAvailable,
         const std::string &urlParams,
         bool isBroadcast,
-        bool isTrusted);
+        bool isTrusted,
+        std::shared_ptr<SessionCallback> sessionCallback);
     
-    App(const App &other);
+    App(const App&) = delete;
+    App &operator=(const App&) = delete;
 
     virtual ~App() = default;
 
@@ -130,9 +147,13 @@ public:
      */
     std::vector<uint16_t> GetOtherKeyValues() const { return m_otherKeys; }
 
+    uint16_t GetId() const { return m_id; }
+
     std::string loadedUrl;
 
 protected:
+    void CheckParentalRating() const;
+
     uint16_t m_keySetMask = 0;
     std::vector<uint16_t> m_otherKeys;
 
@@ -152,6 +173,11 @@ protected:
     std::string m_scheme;
     uint8_t m_versionMinor = 0;
     E_APP_STATE m_state = FOREGROUND_STATE;
+
+    std::shared_ptr<SessionCallback> m_sessionCallback;
+
+private:
+    uint16_t m_id;
 };
 
 #endif // HBBTV_SERVICE_APP_H

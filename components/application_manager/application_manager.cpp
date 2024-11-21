@@ -33,18 +33,43 @@
 #include "utils.h"
 #include "xml_parser.h"
 
-static uint16_t g_id = INVALID_APP_ID;
+class OpAppSessionCallback : public OpApp::SessionCallback
+{
+public:
+    OpAppSessionCallback(ApplicationManager::SessionCallback *sessionCallback, uint16_t *currentAppId)
+        : m_sessionCallback(sessionCallback), m_currentAppId(currentAppId)
+    { }
+    
+    void ShowApplication(uint16_t appId) { if (appId == *m_currentAppId) m_sessionCallback->ShowApplication(); }
+    void HideApplication(uint16_t appId) { if (appId == *m_currentAppId) m_sessionCallback->HideApplication(); }
+    void DispatchTransitionedToBroadcastRelatedEvent(uint16_t appId) { if (appId == *m_currentAppId) m_sessionCallback->DispatchTransitionedToBroadcastRelatedEvent(); }
+    void DispatchApplicationSchemeUpdatedEvent(uint16_t appId, const std::string &scheme) { if (appId == *m_currentAppId) m_sessionCallback->DispatchApplicationSchemeUpdatedEvent(scheme); }
+    int GetParentalControlAge() { return m_sessionCallback->GetParentalControlAge(); }
+    std::string GetParentalControlRegion() { return m_sessionCallback->GetParentalControlRegion(); }
+    std::string GetParentalControlRegion3() { return m_sessionCallback->GetParentalControlRegion3(); }
+
+    void DispatchOperatorApplicationStateChange(uint16_t appId, const std::string &oldState, const std::string &newState) { if (appId == *m_currentAppId) m_sessionCallback->DispatchOperatorApplicationStateChange(oldState, newState); }
+    void DispatchOperatorApplicationStateChangeCompleted(uint16_t appId, const std::string &oldState, const std::string &newState) { if (appId == *m_currentAppId) m_sessionCallback->DispatchOperatorApplicationStateChangeCompleted(oldState, newState); }
+    void DispatchOperatorApplicationContextChange(uint16_t appId, const std::string &startupLocation, const std::string &launchLocation = "") { if (appId == *m_currentAppId) m_sessionCallback->DispatchOperatorApplicationContextChange(startupLocation, launchLocation); }
+    void DispatchOpAppUpdate(uint16_t appId, const std::string &updateEvent) { if (appId == *m_currentAppId) m_sessionCallback->DispatchOpAppUpdate(updateEvent); }
+
+private:
+    ApplicationManager::SessionCallback *m_sessionCallback;
+    uint16_t *m_currentAppId;
+};
 
 /**
  * Application manager
  *
  * @param sessionCallback Implementation of ApplicationManager::SessionCallback interface.
  */
-ApplicationManager::ApplicationManager(std::unique_ptr<SessionCallback> sessionCallback) :
+ApplicationManager::ApplicationManager(std::unique_ptr<ApplicationManager::SessionCallback> sessionCallback) :
     m_sessionCallback(std::move(sessionCallback)),
     m_aitTimeout([&] {
-    OnSelectedServiceAitTimeout();
-})
+        OnSelectedServiceAitTimeout();
+    }),
+    m_appSessionCallback(std::shared_ptr<App::SessionCallback>(new OpAppSessionCallback(m_sessionCallback.get(), &m_appId))),
+    m_opappSessionCallback(std::shared_ptr<OpApp::SessionCallback>(new OpAppSessionCallback(m_sessionCallback.get(), &m_opappId)))
 // myTimeout([&] {
 //     CreateApplication(0, "http://192.168.1.91/mitxp-testsuite/", true);
 // })
@@ -110,19 +135,27 @@ bool ApplicationManager::CreateApplication(uint16_t callingAppId, const std::str
             appDescription = Ait::FindApp(m_ait.Get(), info.orgId, info.appId);
             if (appDescription)
             {
-                if (runAsOpApp)
+                try
                 {
-                    OpApp new_app = OpApp(
-                        *appDescription,
-                        m_isNetworkAvailable,
-                        [&](const OpApp *app) { OpAppStateChangeHandler(app); });
-                    result = RunApp(new_app);
+                    App *new_app;
+                    if (runAsOpApp)
+                    {
+                        new_app = new OpApp(
+                            *appDescription,
+                            m_isNetworkAvailable,
+                            m_opappSessionCallback);
+                    }
+                    else
+                    {
+                        new_app = new App(*appDescription, m_currentService,
+                            m_isNetworkAvailable, info.parameters, true, false, m_appSessionCallback);
+                    }
+                    RunApp(new_app);
+                    result = true;
                 }
-                else
+                catch(const std::exception& e)
                 {
-                    App new_app = App(*appDescription, m_currentService,
-                        m_isNetworkAvailable, info.parameters, true, false);
-                    result = RunApp(new_app);
+                    LOG(LOG_ERROR, "%s", e.what());
                 }
             }
             else
@@ -151,12 +184,13 @@ bool ApplicationManager::CreateApplication(uint16_t callingAppId, const std::str
                 {
                     if (runAsOpApp)
                     {
-                        result = RunApp(OpApp(url, [&](const OpApp *app) { OpAppStateChangeHandler(app); }));
+                        RunApp(new OpApp(url, m_opappSessionCallback));
                     }
                     else
                     {
-                        result = RunApp(App(url));
+                        RunApp(new App(url, m_appSessionCallback));
                     }
+                    result = true;
                 }
                 catch (const std::runtime_error& e)
                 {
@@ -218,7 +252,6 @@ void ApplicationManager::ShowApplication(uint16_t callingAppId)
     if (m_apps.count(callingAppId) > 0)
     {
         m_apps[callingAppId]->SetState(App::FOREGROUND_STATE);
-        m_sessionCallback->ShowApplication();
     }
 }
 
@@ -233,7 +266,6 @@ void ApplicationManager::HideApplication(uint16_t callingAppId)
     if (m_apps.count(callingAppId) > 0)
     {
         m_apps[callingAppId]->SetState(App::BACKGROUND_STATE);
-        m_sessionCallback->HideApplication();
     }
 }
 
@@ -432,9 +464,18 @@ bool ApplicationManager::ProcessXmlAit(const std::string &xmlAit, const bool &is
 
         if (app_description)
         {
-            auto new_app = App(*app_description, m_currentService,
-                m_isNetworkAvailable, "", isDvbi, false);
-            result = RunApp(new_app);
+            try
+            {
+                auto new_app = new App(*app_description, m_currentService,
+                    m_isNetworkAvailable, "", isDvbi, false, m_appSessionCallback);
+                RunApp(new_app);
+                result = true;
+            }
+            catch (const std::runtime_error& e)
+            {
+                LOG(LOG_ERROR, "Error creating app: %s", e.what());
+            }
+
             if (!result)
             {
                 LOG(LOG_ERROR, "Could not find app (org_id=%d, app_id=%d)",
@@ -485,11 +526,19 @@ bool ApplicationManager::RunTeletextApplication()
 
         return false;
     }
-
-    auto newApp = App(*appDescription, m_currentService,
-        m_isNetworkAvailable,
-        "", true, false);
-    return RunApp(newApp);
+    try
+    {
+        auto newApp = new App(*appDescription, m_currentService,
+            m_isNetworkAvailable,
+            "", true, false, m_appSessionCallback);
+        RunApp(newApp);
+        return true;
+    }
+    catch (const std::runtime_error& e)
+    {
+        LOG(LOG_ERROR, "Error creating app: %s", e.what());
+    }
+    return false;
 }
 
 /**
@@ -777,7 +826,6 @@ void ApplicationManager::OnSelectedServiceAitReceived()
             if (signalled != nullptr) {
                 m_apps[m_appId]->Update(*signalled, m_isNetworkAvailable);
             }
-            m_sessionCallback->DispatchApplicationSchemeUpdatedEvent(m_apps[m_appId]->GetScheme());
         }
     }
 }
@@ -844,10 +892,10 @@ void ApplicationManager::OnSelectedServiceAitUpdated()
     {
         OnPerformBroadcastAutostart();
     }
-    else
-    {
-        m_sessionCallback->DispatchApplicationSchemeUpdatedEvent(m_apps[m_appId]->GetScheme());
-    }
+    // else
+    // {
+    //     m_sessionCallback->DispatchApplicationSchemeUpdatedEvent(m_apps[m_appId]->GetScheme());
+    // }
 }
 
 /**
@@ -889,11 +937,15 @@ void ApplicationManager::OnPerformBroadcastAutostart()
     {
         LOG(LOG_ERROR, "OnPerformAutostart Start autostart app.");
 
-        auto newApp = App(*app_desc, m_currentService, m_isNetworkAvailable,
-            "", true, false);
-        if (!RunApp(newApp))
+        try
         {
-            LOG(LOG_ERROR, "OnPerformAutostart Failed to create autostart app.");
+            auto newApp = new App(*app_desc, m_currentService, m_isNetworkAvailable,
+            "", true, false, m_appSessionCallback);
+            RunApp(newApp);
+        }
+        catch(const std::exception& e)
+        {
+            LOG(LOG_ERROR, "%s", e.what());
         }
     }
     else
@@ -908,79 +960,32 @@ void ApplicationManager::OnPerformBroadcastAutostart()
  * @param app The app to run.
  * @return True on success, false on failure.
  */
-bool ApplicationManager::RunApp(const App &app)
-{
-    std::lock_guard<std::recursive_mutex> lock(m_lock);
-    if (!app.GetEntryUrl().empty())
-    {
-        Ait::S_AIT_APP_DESC aitDesc = app.GetAitDescription();
-        /* Note: XML AIt uses the alpha-2 region codes as defined in ISO 3166-1.
-         * DVB's parental_rating_descriptor uses the 3-character code as specified in ISO 3166. */
-        std::string parental_control_region = m_sessionCallback->GetParentalControlRegion();
-        std::string parental_control_region3 = m_sessionCallback->GetParentalControlRegion3();
-        int parental_control_age = m_sessionCallback->GetParentalControlAge();
-        //if none of the parental ratings provided in the broadcast AIT or XML AIT are supported
-        //by the terminal), the request to launch the application shall fail.
-        if (Ait::IsAgeRestricted(aitDesc.parentalRatings, parental_control_age,
-            parental_control_region, parental_control_region3))
-        {
-            LOG(LOG_ERROR, "%s, Parental Control Age RESTRICTED for %s: only %d content accepted",
-                app.loadedUrl.c_str(), parental_control_region.c_str(), parental_control_age);
-            return false;
-        }
-
-        if (app.GetState() == App::BACKGROUND_STATE)
-        {
-            m_sessionCallback->HideApplication();
-        }
-
-        m_apps.erase(m_appId);
-        if (!app.IsBroadcast() && !Utils::IsInvalidDvbTriplet(m_currentService))
-        {
-            m_sessionCallback->StopBroadcast();
-            m_previousService = m_currentService = Utils::MakeInvalidDvbTriplet();
-        }
-        uint16_t id = ++g_id;
-        m_sessionCallback->LoadApplication(id, app.GetEntryUrl().c_str(),
-            aitDesc.graphicsConstraints.size(), aitDesc.graphicsConstraints);
-
-        LOG(LOG_INFO, "Run App with id %d.", id);
-        m_appId = id;
-        m_apps[id] = std::unique_ptr<App>(new App(app));
-        if (m_apps[id]->GetState() != App::BACKGROUND_STATE)
-        {
-            m_sessionCallback->ShowApplication();
-        }
-
-        return true;
-    }
-    return false;
-}
-
-bool ApplicationManager::RunApp(const OpApp &app)
+void ApplicationManager::RunApp(App *app)
 {
     std::lock_guard<std::recursive_mutex> lock(m_lock);
 
-    if (app.GetState() == App::BACKGROUND_STATE)
+    m_apps.erase(m_appId);
+    if (!app->IsBroadcast() && !Utils::IsInvalidDvbTriplet(m_currentService))
     {
-        m_sessionCallback->HideApplication();
+        m_sessionCallback->StopBroadcast();
+        m_previousService = m_currentService = Utils::MakeInvalidDvbTriplet();
     }
-     
-    m_apps.erase(m_opappId);
-    Ait::S_AIT_APP_DESC aitDesc = app.GetAitDescription();
-    uint16_t id = ++g_id;
-    m_sessionCallback->LoadApplication(id, app.GetEntryUrl().c_str(),
-        aitDesc.graphicsConstraints.size(), aitDesc.graphicsConstraints);
+    
+    m_sessionCallback->LoadApplication(app->GetId(), app->GetEntryUrl().c_str(),
+        app->GetAitDescription().graphicsConstraints.size(), app->GetAitDescription().graphicsConstraints);
 
-    LOG(LOG_INFO, "Run OpApp with id %d.", id);
-    m_opappId = id;
-    m_apps[id] = std::unique_ptr<OpApp>(new OpApp(app));
-    if (app.GetState() != App::BACKGROUND_STATE)
+    m_appId = app->GetId();
+    m_apps[m_appId] = std::unique_ptr<App>(app);
+
+    // Call explicitly Show/Hide 
+    if (m_apps[m_appId]->GetState() != App::BACKGROUND_STATE)
     {
         m_sessionCallback->ShowApplication();
     }
-
-    return true;
+    else
+    {
+        m_sessionCallback->HideApplication();
+    }
 }
 
 /**
@@ -1040,13 +1045,7 @@ bool ApplicationManager::TransitionRunningAppToBroadcastRelated()
     m_apps[m_appId]->Update(*app, m_isNetworkAvailable);
     
     /* Note: what about app.is_trusted, app.parental_ratings, ... */
-    if (m_apps[m_appId]->TransitionToBroadcastRelated())
-    {
-        m_sessionCallback->DispatchTransitionedToBroadcastRelatedEvent();
-        return true;
-    }
-
-    return false;
+    return m_apps[m_appId]->TransitionToBroadcastRelated();
 }
 
 /**
@@ -1094,27 +1093,6 @@ const Ait::S_AIT_APP_DESC * ApplicationManager::GetAutoStartApp(const Ait::S_AIT
     int parentalControlAge = m_sessionCallback->GetParentalControlAge();
     return Ait::AutoStartApp(aitTable, parentalControlAge, parentalControlRegion,
         parentalControlRegion3);
-}
-
-void ApplicationManager::OpAppStateChangeHandler(const OpApp *app)
-{
-    if (m_apps.count(m_opappId) > 0 && m_apps[m_opappId].get() == app)
-    {
-        switch (app->GetState())
-        {
-            case OpApp::FOREGROUND_STATE:
-            case OpApp::OVERLAID_FOREGROUND_STATE:
-                ShowApplication(m_opappId);
-                break;
-            case OpApp::BACKGROUND_STATE:
-                HideApplication(m_opappId);
-                break;
-            default:
-                break;
-        }
-
-        LOG(LOG_INFO, "State changed to %d for app[%d] successfully.", app->GetState(), m_opappId);
-    }
 }
 
 /**

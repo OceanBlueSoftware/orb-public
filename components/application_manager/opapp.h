@@ -26,13 +26,24 @@
 class OpApp : public App
 {
 public:
-    typedef std::function<void(const OpApp*)> F_STATE_CHANGE_CB;
+    class SessionCallback : public App::SessionCallback
+    {
+public:
+        virtual void DispatchOperatorApplicationStateChange(uint16_t appId, const std::string &oldState, const std::string &newState) = 0;
+        virtual void DispatchOperatorApplicationStateChangeCompleted(uint16_t appId, const std::string &oldState, const std::string &newState) = 0;
+        virtual void DispatchOperatorApplicationContextChange(uint16_t appId, const std::string &startupLocation, const std::string &launchLocation = "") = 0;
+        virtual void DispatchOpAppUpdate(uint16_t appId, const std::string &updateEvent) = 0;
+        virtual ~SessionCallback() = default;
+    };
 
-    OpApp(const std::string &url, const F_STATE_CHANGE_CB &changeStateCb);
+    OpApp(const std::string &url, std::shared_ptr<SessionCallback> sessionCallback);
 
-    OpApp(const Ait::S_AIT_APP_DESC &desc, bool isNetworkAvailable, const F_STATE_CHANGE_CB &changeStateCb);
+    OpApp(const Ait::S_AIT_APP_DESC &desc, bool isNetworkAvailable, std::shared_ptr<SessionCallback> sessionCallback);
+    
+    virtual ~OpApp() = default;
 
-    OpApp(const OpApp &other);
+    OpApp(const App&) = delete;
+    OpApp &operator=(const OpApp&) = delete;
     
     void SetState(const E_APP_STATE &state) override;
     
@@ -42,8 +53,6 @@ public:
 
 private:
     bool canTransitionToState(const E_APP_STATE &state);
-
-    F_STATE_CHANGE_CB m_stateChangeCb;
 
     Utils::Timeout m_countdown = Utils::Timeout([&] { 
         if (m_state == TRANSIENT_STATE || m_state == OVERLAID_TRANSIENT_STATE)

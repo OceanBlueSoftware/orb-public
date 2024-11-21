@@ -3,34 +3,25 @@
 
 #define COUNT_DOWN_TIMEOUT 60000
 
-OpApp::OpApp(const std::string &url, const F_STATE_CHANGE_CB &changeStateCb)
-    : App(url),
-    m_stateChangeCb(changeStateCb)
+static std::string opAppStateToString(const OpApp::E_APP_STATE &state);
+
+OpApp::OpApp(const std::string &url, std::shared_ptr<SessionCallback> sessionCallback)
+    : App(url, sessionCallback)
 { 
     m_state = BACKGROUND_STATE; // ETSI TS 103 606 V1.2.1 (2024-03) page 36
 }
 
-OpApp::OpApp(const Ait::S_AIT_APP_DESC &desc, bool isNetworkAvailable, const F_STATE_CHANGE_CB &changeStateCb)
+OpApp::OpApp(const Ait::S_AIT_APP_DESC &desc, bool isNetworkAvailable, std::shared_ptr<SessionCallback> sessionCallback)
     : App(
         desc,
         Utils::MakeInvalidDvbTriplet(),
         isNetworkAvailable,
         "",
         true,
-        false),
-    m_stateChangeCb(changeStateCb)
+        false,
+        sessionCallback)
 { 
     m_state = BACKGROUND_STATE; // ETSI TS 103 606 V1.2.1 (2024-03) page 36
-}
-
-OpApp::OpApp(const OpApp &other)
-    : App(other),
-      m_stateChangeCb(other.m_stateChangeCb)
-{
-    if (!other.m_countdown.isStopped())
-    {
-        m_countdown.start(other.m_countdown.elapsed());
-    }
 }
 
 void OpApp::SetState(const E_APP_STATE &state)
@@ -39,8 +30,19 @@ void OpApp::SetState(const E_APP_STATE &state)
     {
         if (state != m_state)
         {
+            std::string previous = opAppStateToString(m_state);
+            std::string next = opAppStateToString(state);
             m_state = state;
-            m_stateChangeCb(this);
+            static_cast<SessionCallback*>(m_sessionCallback.get())->DispatchOperatorApplicationStateChange(GetId(), previous, next);
+            
+            if (state == BACKGROUND_STATE)
+            {
+                m_sessionCallback->HideApplication(GetId());
+            }
+            else
+            {
+                m_sessionCallback->ShowApplication(GetId());
+            }
         }
         if ((state | TRANSIENT_STATE) != 0)
         {
@@ -85,4 +87,19 @@ bool OpApp::canTransitionToState(const E_APP_STATE &state)
         }
     }
     return true;
+}
+
+static std::string opAppStateToString(const OpApp::E_APP_STATE &state)
+{
+    switch (state)
+    {
+        case OpApp::BACKGROUND_STATE: return "background";
+        case OpApp::FOREGROUND_STATE: return "foreground";
+        case OpApp::TRANSIENT_STATE: return "transient";
+        case OpApp::OVERLAID_TRANSIENT_STATE: return "overlaid-transient";
+        case OpApp::OVERLAID_FOREGROUND_STATE: return "overlaid-foreground";
+        default: break;
+    }
+    // should never get here
+    return "undefined";
 }

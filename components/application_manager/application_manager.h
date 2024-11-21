@@ -372,9 +372,7 @@ private:
      * @param app The app to run.
      * @return True on success, false on failure.
      */
-    bool RunApp(const App &app);
-
-    bool RunApp(const OpApp &app);
+    void RunApp(App *app);
 
     /**
      * Kill the running app.
@@ -411,8 +409,6 @@ private:
      */
     const Ait::S_AIT_APP_DESC* GetAutoStartApp(const Ait::S_AIT_TABLE *aitTable);
 
-    void OpAppStateChangeHandler(const OpApp *app);
-
     std::unique_ptr<SessionCallback> m_sessionCallback;
     Ait m_ait;
     std::unordered_map<uint16_t, std::unique_ptr<App>> m_apps;
@@ -425,6 +421,8 @@ private:
     bool m_isNetworkAvailable = false;
     std::recursive_mutex m_lock;
     Utils::Timeout m_aitTimeout;
+    std::shared_ptr<App::SessionCallback> m_appSessionCallback;
+    std::shared_ptr<OpApp::SessionCallback> m_opappSessionCallback;
 
     //Utils::Timeout myTimeout; // TODO: REMOVE ME
 };

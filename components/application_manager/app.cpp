@@ -62,6 +62,8 @@
 #define VK_ALPHA_START 65
 #define VK_ALPHA_END 90
 
+static uint16_t g_id = INVALID_APP_ID;
+
 static std::string getAppSchemeFromUrlParams(const std::string &urlParams);
 static std::string getUrlParamsFromAppScheme(const std::string &scheme);
 
@@ -79,8 +81,8 @@ static bool IsKeyAlpha(const uint16_t &code);
 static bool IsKeyVcr(const uint16_t &code);
 static bool IsKeyScroll(const uint16_t &code);
 
-App::App(const std::string &url)
-    : loadedUrl(url), m_entryUrl(url), m_baseUrl(url)
+App::App(const std::string &url, std::shared_ptr<SessionCallback> sessionCallback)
+    : loadedUrl(url), m_entryUrl(url), m_baseUrl(url), m_sessionCallback(sessionCallback), m_id(++g_id)
 {
     if (url.empty())
     {
@@ -94,35 +96,20 @@ App::App(const Ait::S_AIT_APP_DESC &desc,
     bool isNetworkAvailable,
     const std::string &urlParams,
     bool isBroadcast,
-    bool isTrusted)
+    bool isTrusted,
+    std::shared_ptr<SessionCallback> sessionCallback)
         : m_service(currentService),
         m_isTrusted(isTrusted),
         m_isBroadcast(isBroadcast),
-        m_versionMinor(INT8_MAX)
+        m_versionMinor(INT8_MAX),
+        m_sessionCallback(sessionCallback),
+        m_id(++g_id)
 {
     m_baseUrl = Ait::ExtractBaseURL(desc, m_service, isNetworkAvailable);
     m_entryUrl = Utils::MergeUrlParams(m_baseUrl, desc.location, urlParams);
     loadedUrl = m_entryUrl;
     Update(desc, isNetworkAvailable);
 }
-
-App::App(const App &other)
-    : loadedUrl(other.loadedUrl),
-    m_keySetMask(other.m_keySetMask),
-    m_otherKeys(other.m_otherKeys),
-    m_entryUrl(other.m_entryUrl),
-    m_baseUrl(other.m_baseUrl),
-    m_service(other.m_service),
-    m_protocolId(other.m_protocolId),
-    m_isActivated(other.m_isActivated),
-    m_isTrusted(other.m_isTrusted),
-    m_isBroadcast(other.m_isBroadcast),
-    m_aitDesc(other.m_aitDesc),
-    m_names(other.m_names),
-    m_scheme(other.m_scheme),
-    m_versionMinor(other.m_versionMinor),
-    m_state(other.m_state)
-{ }
 
 void App::Update(const Ait::S_AIT_APP_DESC &desc, bool isNetworkAvailable)
 {
@@ -158,6 +145,10 @@ void App::Update(const Ait::S_AIT_APP_DESC &desc, bool isNetworkAvailable)
     }
     LOG(LOG_DEBUG, "App[%d] properties: orgId=%d, controlCode=%d, protocolId=%d, baseUrl=%s, entryUrl=%s, loadedUrl=%s",
             m_aitDesc.appId, m_aitDesc.orgId, m_aitDesc.controlCode, m_protocolId, m_baseUrl.c_str(), m_entryUrl.c_str(), loadedUrl.c_str());
+    
+    m_sessionCallback->DispatchApplicationSchemeUpdatedEvent(GetId(), m_scheme);
+            
+    CheckParentalRating();
 }
 
 bool App::TransitionToBroadcastRelated()
@@ -189,6 +180,7 @@ bool App::TransitionToBroadcastRelated()
     }
 
     m_isBroadcast = true;
+    m_sessionCallback->DispatchTransitionedToBroadcastRelatedEvent(GetId());
     return true;
 }
 
@@ -275,9 +267,34 @@ bool App::InKeySet(uint16_t keyCode)
 void App::SetState(const E_APP_STATE &state)
 {
     // HbbTV apps can go only to background or foreground state
-    if (state == BACKGROUND_STATE || state == FOREGROUND_STATE)
+    if (state != m_state && (state == BACKGROUND_STATE || state == FOREGROUND_STATE))
     {
         m_state = state;
+        if (state == BACKGROUND_STATE)
+        {
+            m_sessionCallback->HideApplication(GetId());
+        }
+        else
+        {
+            m_sessionCallback->ShowApplication(GetId());
+        }
+    }
+}
+
+void App::CheckParentalRating() const
+{
+    /* Note: XML AIt uses the alpha-2 region codes as defined in ISO 3166-1.
+     * DVB's parental_rating_descriptor uses the 3-character code as specified in ISO 3166. */
+    std::string parental_control_region = m_sessionCallback->GetParentalControlRegion();
+    std::string parental_control_region3 = m_sessionCallback->GetParentalControlRegion3();
+    int parental_control_age = m_sessionCallback->GetParentalControlAge();
+    //if none of the parental ratings provided in the broadcast AIT or XML AIT are supported
+    //by the terminal), the request to launch the application shall fail.
+    if (Ait::IsAgeRestricted(m_aitDesc.parentalRatings, parental_control_age,
+        parental_control_region, parental_control_region3))
+    {
+        throw std::runtime_error(loadedUrl + ", Parental Control Age RESTRICTED for " +
+            parental_control_region + ": only " + std::to_string(parental_control_age) + " content accepted");
     }
 }
 
