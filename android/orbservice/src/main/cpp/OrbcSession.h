@@ -39,6 +39,11 @@ public:
   STATUS processAIT(int32_t in_aitPid, int32_t in_serviceId, const vector<uint8_t>& in_data) override;
   STATUS onServiceListChanged() override;
   STATUS onParentalRatingChanged(bool in_blocked) override;
+  STATUS onSelectedComponentChanged(int32_t in_componentType) override;
+  STATUS onComponentChanged(int32_t in_componentType) override;
+  STATUS onChannelStatusChanged(int32_t in_onetId, int32_t in_transId, int32_t in_servId, int32_t in_statusCode, bool in_permanentError) override;
+  STATUS onProgrammesChanged() override;
+  STATUS onVideoAspectRatioChanged(int32_t in_aspectRatioCode) override;
 
 };
 

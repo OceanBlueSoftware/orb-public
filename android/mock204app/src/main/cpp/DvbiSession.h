@@ -27,6 +27,17 @@ public:
    DvbiSession();
 
 public:
+   ScopedAStatus getCapabilities(std::vector<uint8_t>* _aidl_return) override;
+   ScopedAStatus getAudioProfiles(std::vector<uint8_t>* _aidl_return) override;
+   ScopedAStatus getVideoProfiles(std::vector<uint8_t>* _aidl_return) override;
+   ScopedAStatus getVideoDisplayFormats(std::vector<uint8_t>* _aidl_return) override;
+   ScopedAStatus getExtraSDVideoDecodes(int32_t* _aidl_return) override;
+   ScopedAStatus getExtraHDVideoDecodes(int32_t* _aidl_return) override;
+   ScopedAStatus getExtraUHDVideoDecodes(int32_t* _aidl_return) override;
+
+   ScopedAStatus getSystemInformation(std::vector<uint8_t>* _aidl_return) override;
+   ScopedAStatus getPreferredAudioLanguage(std::vector<uint8_t>* _aidl_return) override;
+   ScopedAStatus getPreferredSubtitleLanguage(std::vector<uint8_t>* _aidl_return) override;
    ScopedAStatus getPreferredUILanguage(std::string* _aidl_return) override;
    ScopedAStatus getCountryId(std::string* _aidl_return) override;
    ScopedAStatus getSubtitlesEnabled(bool* _aidl_return) override;

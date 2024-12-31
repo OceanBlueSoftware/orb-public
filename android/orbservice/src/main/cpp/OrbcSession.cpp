@@ -50,8 +50,7 @@ OrbcSession* OrbcSession::getInstance()
     return s_instance;
 }
 
-STATUS
-OrbcSession::initialise(const SH_PTR<IDvbiSession>& dvb)
+STATUS OrbcSession::initialise(const SH_PTR<IDvbiSession>& dvb)
 {
    STATUS status;
    bool enabled;
@@ -71,8 +70,7 @@ OrbcSession::initialise(const SH_PTR<IDvbiSession>& dvb)
    return STATUS::ok();
 }
 
-STATUS
-OrbcSession::processAIT(int32_t aitPid, int32_t serviceId, const std::vector<uint8_t>& in_data)
+STATUS OrbcSession::processAIT(int32_t aitPid, int32_t serviceId, const vector<uint8_t>& in_data)
 {
    STATUS status;
    string ccid;
@@ -97,24 +95,56 @@ OrbcSession::processAIT(int32_t aitPid, int32_t serviceId, const std::vector<uin
    return STATUS::ok();
 }
 
-STATUS
-OrbcSession::onServiceListChanged()
+STATUS OrbcSession::onServiceListChanged()
 {
-   STATUS status;
-
    LOGI("")
-
-   //status.set(AStatus_fromStatus(STATUS_OK));
-   return status;
-}
-
-STATUS
-OrbcSession::onParentalRatingChanged(bool in_blocked)
-{
-   LOGI("blk?=%d", in_blocked)
 
    return STATUS::ok();
 }
+
+STATUS OrbcSession::onParentalRatingChanged(bool blocked)
+{
+   LOGI("blk?=%d", blocked)
+
+   return STATUS::ok();
+}
+
+STATUS OrbcSession::onSelectedComponentChanged(int32_t componentType)
+{
+   LOGI("ctyp=%d", componentType)
+
+   return STATUS::ok();
+}
+
+STATUS OrbcSession::onComponentChanged(int32_t componentType)
+{
+   LOGI("ctyp=%d", componentType)
+
+   return STATUS::ok();
+}
+
+STATUS OrbcSession::onChannelStatusChanged(int32_t onetId, int32_t transId, int32_t servId, int32_t statusCode, bool permanentError)
+{
+   LOGI("onid=%d tid=%d sid=%d, status=%d, perr?=%d", onetId, transId, servId, statusCode, permanentError)
+
+   return STATUS::ok();
+}
+
+STATUS OrbcSession::onProgrammesChanged()
+{
+   LOGI("")
+
+   return STATUS::ok();
+}
+
+STATUS OrbcSession::onVideoAspectRatioChanged(int32_t aspectRatio)
+{
+   LOGI("aspectRatio?=%d", aspectRatio)
+
+   return STATUS::ok();
+}
+
+
 
 #ifdef NDK_AIDL
 } // namespace aidl

@@ -123,6 +123,110 @@ DvbiSession::DvbiSession()
 {
 }
 
+// ----------------------------------------------------------------------------------
+//              Start of Interface functions required by ORB
+// ----------------------------------------------------------------------------------
+
+ScopedAStatus DvbiSession::getCapabilities(vector<uint8_t>* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getAudioProfiles(vector<uint8_t>* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getVideoProfiles(vector<uint8_t>* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getVideoDisplayFormats(vector<uint8_t>* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getExtraSDVideoDecodes(int32_t* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getExtraHDVideoDecodes(int32_t* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getExtraUHDVideoDecodes(int32_t* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getSystemInformation(std::vector<uint8_t>* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getPreferredAudioLanguage(std::vector<uint8_t>* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getPreferredSubtitleLanguage(std::vector<uint8_t>* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
 ScopedAStatus DvbiSession::getPreferredUILanguage(vector<uint8_t>* lang)
 {
     ScopedAStatus status;
@@ -170,6 +274,76 @@ ScopedAStatus DvbiSession::getAudioDescriptionEnabled(bool* enabled)
    return status;
 }
 
+ScopedAStatus DvbiSession::getDttNetworkIds(vector<int32_t>* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getVolume(int32_t* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::setVolume(int32_t in_volume, bool* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::overrideComponentSelection(int32_t in_type, const vector<uint8_t>& in_id)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::restoreComponentSelection(int32_t in_type)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::setDvbVideoRectangle(int32_t in_x, int32_t in_y, int32_t in_width, int32_t in_height)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::getChannelList(vector<uint8_t>* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
 ScopedAStatus DvbiSession::getCurrentCcid(vector<uint8_t> *pccid)
 {
     ScopedAStatus status;
@@ -181,3 +355,47 @@ ScopedAStatus DvbiSession::getCurrentCcid(vector<uint8_t> *pccid)
     status.set(AStatus_fromStatus(STATUS_OK));
     return status;
 }
+
+ScopedAStatus DvbiSession::getChannel(const vector<uint8_t>& in_ccid, vector<uint8_t>* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::setChannelByTriplet(int32_t in_idType, int32_t in_onid, int32_t in_tsid, int32_t in_sid, int32_t in_sourceID,
+    const vector<uint8_t>& in_ipBroadcastID, bool in_trickplay, const vector<uint8_t>& in_contentAccessDescriptorURL, int32_t in_quiet, int32_t* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::setChannelByDsd(const vector<uint8_t>& in_dsd, int32_t in_sid, bool in_trickplay,
+    const vector<uint8_t>& in_contentAccessDescriptorURL, int32_t in_quiet, int32_t* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
+ScopedAStatus DvbiSession::setChannelToCcid(const vector<uint8_t>& in_ccid, bool in_trickplay,
+    const vector<uint8_t>& in_contentAccessDescriptorURL, int32_t in_quiet, int32_t* _aidl_return)
+{
+    ScopedAStatus status;
+
+    LOGI("")
+
+    status.set(AStatus_fromStatus(STATUS_OK));
+    return status;
+}
+
