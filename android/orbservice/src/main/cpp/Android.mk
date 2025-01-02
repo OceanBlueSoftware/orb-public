@@ -8,10 +8,10 @@ LOCAL_PRIVATE_PLATFORM_APIS := true
 LOCAL_AIDL_INCLUDES := $(LOCAL_PATH)/aidl
 
 LOCAL_SRC_FILES := \
-   aidl/org/orbtv/orbservice/IDvbiSession.aidl \
-   aidl/org/orbtv/orbservice/IOrbcSession.aidl \
+   $(call all-subdir-Iaidl-files) \
    native.cpp \
    jni_utils.cpp \
+   BridgeSession.cpp \
    OrbcSession.cpp
 
 LOCAL_CFLAGS := -Wno-unused-parameter \
@@ -20,9 +20,6 @@ LOCAL_CFLAGS := -Wno-unused-parameter \
    -Wno-reorder-ctor \
    -Wno-non-virtual-dtor \
    -Wno-unused-private-field
-
-LOCAL_C_INCLUDES := \
-	$(LOCAL_PATH)/aidl/include/cpp
 
 LOCAL_STATIC_LIBRARIES := \
    liblog

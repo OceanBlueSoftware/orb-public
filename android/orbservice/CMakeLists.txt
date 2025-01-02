@@ -33,8 +33,11 @@ add_library(
    # sources...
    src/main/cpp/generated/aidl/org/orbtv/orbservice/IDvbiSession.cpp
    src/main/cpp/generated/aidl/org/orbtv/orbservice/IOrbcSession.cpp
+   src/main/cpp/generated/aidl/org/orbtv/orbservice/IBrowserSession.cpp
+   src/main/cpp/generated/aidl/org/orbtv/orbservice/IBridgeSession.cpp
    src/main/cpp/native.cpp
    src/main/cpp/jni_utils.cpp
+   src/main/cpp/BridgeSession.cpp
    src/main/cpp/OrbcSession.cpp
 )
 

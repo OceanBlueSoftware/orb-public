@@ -24,6 +24,7 @@
 
 #include "jni_utils.h"
 #include "OrbcSession.h"
+#include "BridgeSession.h"
 
 #define TAG                "orbservice/native"
 #define LOGI(x, ...)    __android_log_print(ANDROID_LOG_INFO, TAG, "%s:%u " x "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__);
@@ -54,6 +55,20 @@ Java_org_orbtv_orbservice_OrbService_createBinder(
    AIBinder* binder = OrbcSession::getInstance()->asBinder().get();
 #else
    AIBinder* binder = AIBinder_fromPlatformBinder(android::IInterface::asBinder(OrbcSession::getInstance()));
+#endif
+   return env->NewGlobalRef(AIBinder_toJavaBinder(env, binder));
+}
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_org_orbtv_orbservice_BridgeService_createBinder(
+        JNIEnv* env,
+        jobject /* this */)
+{
+   LOGI("")
+#ifdef NDK_AIDL
+   AIBinder* binder = BridgeSession::getInstance()->asBinder().get();
+#else
+   AIBinder* binder = AIBinder_fromPlatformBinder(android::IInterface::asBinder(BridgeSession::getInstance()));
 #endif
    return env->NewGlobalRef(AIBinder_toJavaBinder(env, binder));
 }

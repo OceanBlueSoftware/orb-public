@@ -9,5 +9,9 @@
            android:name=".OrbService" 
            android:exported="true">
         </service>
+        <service 
+           android:name=".BridgeService" 
+           android:exported="true">
+        </service>
     </application>
 </manifest>

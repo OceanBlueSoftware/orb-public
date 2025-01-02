@@ -63,6 +63,18 @@ task copyPolyfill(type: Copy) {
     into file("${projectDir}/src/main/assets/polyfill")
 }
 
+task copyBridgeAidl(type: Copy) {
+    from "${projectDir}/../orbservice/src/main/cpp/aidl/org/orbtv/orbservice/IBridgeSession.aidl"
+    into file("${projectDir}/src/main/aidl/org/orbtv/orbservice/")
+}
+preBuild.dependsOn(copyBridgeAidl)
+
+task copyBrowserAidl(type: Copy) {
+    from "${projectDir}/../orbservice/src/main/cpp/aidl/org/orbtv/orbservice/IBrowserSession.aidl"
+    into file("${projectDir}/src/main/aidl/org/orbtv/orbservice/")
+}
+preBuild.dependsOn(copyBrowserAidl)
+
 dependencies {
     implementation project(path: ':orbpolyfill')
     implementation 'com.squareup.okhttp3:okhttp:3.14.9'

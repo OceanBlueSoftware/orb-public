@@ -55,9 +55,15 @@ task compileAidlNdk() {
         def aidlFile2 = [projectDir.absolutePath, 'src', 'main', 'cpp', 'aidl',
                          'org', 'orbtv', 'orbservice', "IDvbiSession.aidl"].join(File.separator)
 
+        def aidlFile3 = [projectDir.absolutePath, 'src', 'main', 'cpp', 'aidl',
+                         'org', 'orbtv', 'orbservice', "IBridgeSession.aidl"].join(File.separator)
+
+        def aidlFile4 = [projectDir.absolutePath, 'src', 'main', 'cpp', 'aidl',
+                         'org', 'orbtv', 'orbservice', "IBrowserSession.aidl"].join(File.separator)
+
         exec {
             executable(aidl)
-            args('--lang=ndk', '-o', outDir, '-h', headerOutDir, '-I', searchPathForImports, aidlFile1, aidlFile2)
+            args('--lang=ndk', '-o', outDir, '-h', headerOutDir, '-I', searchPathForImports, aidlFile1, aidlFile2, aidlFile3, aidlFile4)
         }
     }
 }
