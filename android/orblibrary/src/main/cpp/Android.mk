@@ -11,26 +11,37 @@ endif
 
 ifeq ($(ORB_VENDOR), true)
     LOCAL_VENDOR_MODULE := true
-
+    
     LOCAL_SHARED_LIBRARIES := \
         libbase \
         libcutils \
         libutils \
         liblog
-
+    
     LOCAL_STATIC_LIBRARIES := \
         libcap \
         libssl \
-        libcrypto_static \
-        libjsoncpp_ORB
+        libcrypto_static
+        
+    ifeq ($(PLATFORM_SDK_VERSION), 30)
+        LOCAL_STATIC_LIBRARIES += libjsoncpp_ORB
+    else
+        LOCAL_STATIC_LIBRARIES += libjsoncpp
+    endif
 
 else
+
     LOCAL_SHARED_LIBRARIES := \
         libcap \
         libssl \
-        libcrypto \
-        libjsoncpp_ORB
+        libcrypto
 
+    ifeq ($(PLATFORM_SDK_VERSION), 30)
+        LOCAL_SHARED_LIBRARIES += libjsoncpp_ORB
+    else
+        LOCAL_SHARED_LIBRARIES += libjsoncpp
+    endif
+       
     LOCAL_STATIC_LIBRARIES := \
         liblog
 endif

@@ -1,9 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-# Use jsoncpp_ORB or otherwise use default jsoncpp from source tree
-USE_JSONCPP_ORB ?= 1
-
 LOCAL_MODULE := liborg.orbtv.orblibrary.networkservices
 
 ifeq ($(ORB_HBBTV_VERSION),)
@@ -18,6 +15,13 @@ ifeq ($(ORB_VENDOR), true)
         libcap \
         libssl \
         libwebsockets
+
+    ifeq ($(PLATFORM_SDK_VERSION), 30)
+        LOCAL_STATIC_LIBRARIES += libjsoncpp_ORB
+    else
+        LOCAL_STATIC_LIBRARIES += libjsoncpp
+    endif
+
 else
     LOCAL_SHARED_LIBRARIES := \
         libcap \
@@ -25,6 +29,13 @@ else
 
     LOCAL_STATIC_LIBRARIES := \
         libwebsockets
+
+    ifeq ($(PLATFORM_SDK_VERSION), 30)
+        LOCAL_SHARED_LIBRARIES += libjsoncpp_ORB
+    else
+        LOCAL_SHARED_LIBRARIES += libjsoncpp
+    endif
+
 endif
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/media_synchroniser \
@@ -66,12 +77,6 @@ LOCAL_CFLAGS := \
    -Wno-reorder \
    -Wno-sign-compare \
    -Wno-pessimizing-move
-
-ifeq ($(USE_JSONCPP_ORB), 1)
-    LOCAL_SHARED_LIBRARIES += libjsoncpp_ORB
-else
-    LOCAL_STATIC_LIBRARIES += libjsoncpp
-endif
 
 LOCAL_CPPFLAGS += -fexceptions \
                   -frtti
