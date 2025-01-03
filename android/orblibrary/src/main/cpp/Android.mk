@@ -28,9 +28,14 @@ else
     LOCAL_SHARED_LIBRARIES := \
         libcap \
         libssl \
-        libcrypto \
-        libjsoncpp_ORB
+        libcrypto
 
+    ifeq ($(PLATFORM_SDK_VERSION), 30)
+        LOCAL_SHARED_LIBRARIES += libjsoncpp_ORB
+    else
+        LOCAL_SHARED_LIBRARIES += libjsoncpp
+    endif
+       
     LOCAL_STATIC_LIBRARIES := \
         liblog
 endif
