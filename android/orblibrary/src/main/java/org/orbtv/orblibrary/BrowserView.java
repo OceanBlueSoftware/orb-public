@@ -57,7 +57,7 @@ class BrowserView extends WebView {
                        OrbSessionFactory.Configuration configuration, DsmccClient dsmccClient) {
         super(context);
         mContext = context;
-        mJavaScriptBridgeInterface = new JavaScriptBridgeInterface(bridge);
+        mJavaScriptBridgeInterface = new JavaScriptBridgeInterface(bridge, new OrbcBridge(context, this));
 
         setHiddenFlag(PAGE_HIDDEN_FLAG);
         setBackgroundColor(Color.TRANSPARENT);
@@ -325,14 +325,20 @@ class BrowserView extends WebView {
 
     private static class JavaScriptBridgeInterface {
         public final Bridge mBridge;
+        public final OrbcBridge mOrbcBridge;
         public boolean mQuitting = false;
 
-        JavaScriptBridgeInterface(Bridge bridge) {
+        JavaScriptBridgeInterface(Bridge bridge, OrbcBridge obridge) {
             mBridge = bridge;
+            mOrbcBridge = obridge;
         }
 
         @JavascriptInterface
         public String request(String json) {
+
+            String result = mOrbcBridge.executeRequest(json);
+            Log.i(TAG, "New interface would return: " + result);
+
             try {
                 JSONObject object = new JSONObject(json);
                 String method = object.getString("method");
