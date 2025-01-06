@@ -72,11 +72,40 @@ STATUS BridgeSession::initialise(const SH_PTR<IBrowserSession>& browser)
 
 STATUS BridgeSession::executeRequest(const vector<uint8_t>& jsonstr, vector<uint8_t>* result)
 {
-   LOGI("")
-   return STATUS::ok();
+#ifdef NDK_AIDL
+    // this cannot be implemented in NDK
+#else
+    std::string json_request(jsonstr.begin(), jsonstr.end());
+    LOGI("json_request=%s", json_request.c_str());
+#endif
+
+    return STATUS::ok();
 }
 
+STATUS BridgeSession::getTvKeyCodeForApp(int32_t a_code, int32_t appId, int32_t* tv_code)
+{
+    LOGI("")
+    *tv_code = 0;
+    return STATUS::ok();
+}
 
+STATUS BridgeSession::notifyLoadApplicationFailed(int32_t appId)
+{
+    LOGI("")
+    return STATUS::ok();
+}
+
+STATUS BridgeSession::notifyApplicationPageChanged(int32_t appId, const vector<uint8_t>& url)
+{
+    LOGI("")
+    return STATUS::ok();
+}
+
+STATUS BridgeSession::LoadDsmccDvbUrl(const vector<uint8_t>& dvb_url, int32_t requestId)
+{
+    LOGI("")
+    return STATUS::ok();
+}
 
 #ifdef NDK_AIDL
 } // namespace aidl

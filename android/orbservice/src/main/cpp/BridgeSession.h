@@ -37,7 +37,10 @@ public:
 public:
   STATUS initialise(const SH_PTR<IBrowserSession>& browser) override;
   STATUS executeRequest(const vector<uint8_t>& jsonstr, vector<uint8_t>* result) override;
-
+  STATUS getTvKeyCodeForApp(int32_t a_code, int32_t appId, int32_t* tv_code) override;
+  STATUS notifyLoadApplicationFailed(int32_t appId) override;
+  STATUS notifyApplicationPageChanged(int32_t appId, const vector<uint8_t>& url) override;
+  STATUS LoadDsmccDvbUrl(const vector<uint8_t>& dvb_url, int32_t requestId) override;
 };
 
 } // namespace org::orbtv::orbservice

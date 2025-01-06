@@ -123,6 +123,12 @@ class OrbcBridge
             String txt = new String(text, java.nio.charset.StandardCharsets.ISO_8859_1);
             Log.d(TAG, "");
         }
+
+        @Override
+        public void receiveDsmccContent(int requestId, byte[] content)
+        {
+
+        }
     }
 
 }
