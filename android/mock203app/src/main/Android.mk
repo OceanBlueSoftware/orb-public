@@ -27,7 +27,6 @@ LOCAL_AIDL_INCLUDES := $(LOCAL_PATH)/$(DIAL_AIDL_PATH)
 
 LOCAL_JNI_SHARED_LIBRARIES := \
    liborg.orbtv.orblibrary.native
-#   liborg.orbtv.mock203app.native \
 
 LOCAL_CERTIFICATE := platform
 LOCAL_PROGUARD_ENABLED := disabled
