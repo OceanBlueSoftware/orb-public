@@ -53,6 +53,10 @@ class BrowserView extends WebView {
     private int mViewWidth = 0; // Await onLayoutChange to calculate View width
     private int mAppWidth = 1280; // Apps are 1280 by default
 
+    // To be used within set/unsetHiddenFlag() to prevent previously loaded app from
+    // flashing when changing to a different app
+    private boolean mVisibilityOverride = false;
+
     public BrowserView(Context context, Bridge bridge,
                        OrbSessionFactory.Configuration configuration, DsmccClient dsmccClient) {
         super(context);
@@ -114,6 +118,12 @@ class BrowserView extends WebView {
                     mSessionCallback.notifyApplicationPageChanged(mAppId, request.getUrl().toString());
                 }
                 return mWebResourceClient.shouldInterceptRequest(request, mAppId);
+            }
+
+            @Override
+            public void onPageCommitVisible(WebView view, String url) {
+                mVisibilityOverride = true;
+                setHiddenFlag(mHiddenMask); // trigger browser view visibility update
             }
         });
 
@@ -192,6 +202,7 @@ class BrowserView extends WebView {
 
     public void loadApplication(int appId, String entryUrl, int[] graphicsConfigIds) {
         mLoadAppId = appId;
+        mVisibilityOverride = false;
         mContext.getMainExecutor().execute(() -> {
             mAppId = appId;
             loadUrl(entryUrl);
@@ -259,7 +270,7 @@ class BrowserView extends WebView {
 
     private void setHiddenFlag(int flag) {
         mHiddenMask |= flag;
-        if (mHiddenMask == 0) {
+        if (mHiddenMask == 0 && mVisibilityOverride) {
             super.setVisibility(View.VISIBLE);
         } else {
             super.setVisibility(View.INVISIBLE);
@@ -268,7 +279,7 @@ class BrowserView extends WebView {
 
     private void unsetHiddenFlag(int flag) {
         mHiddenMask &= ~flag;
-        if (mHiddenMask == 0) {
+        if (mHiddenMask == 0 && mVisibilityOverride) {
             super.setVisibility(View.VISIBLE);
         } else {
             super.setVisibility(View.INVISIBLE);
