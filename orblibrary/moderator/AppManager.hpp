@@ -26,6 +26,8 @@ namespace orb
 class AppManager : ComponentBase
 {
 public:
+    static AppManager& instance(); // singleton
+
     /**
      * AppManager request
      *

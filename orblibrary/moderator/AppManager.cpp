@@ -28,6 +28,13 @@ using namespace std;
 
 namespace orb
 {
+
+AppManager& AppManager::instance()
+{
+    static AppManager s_interface;
+    return s_interface;
+}
+
 string AppManager::executeRequest(string method, Json::Value token, Json::Value params)
 {
     // TODO Set up proper responses
