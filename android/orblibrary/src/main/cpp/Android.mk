@@ -11,18 +11,18 @@ endif
 
 ifeq ($(ORB_VENDOR), true)
     LOCAL_VENDOR_MODULE := true
-    
+
     LOCAL_SHARED_LIBRARIES := \
         libbase \
         libcutils \
         libutils \
         liblog
-    
+
     LOCAL_STATIC_LIBRARIES := \
         libcap \
         libssl \
         libcrypto_static
-        
+
     ifeq ($(PLATFORM_SDK_VERSION), 30)
         LOCAL_STATIC_LIBRARIES += libjsoncpp_ORB
     else
@@ -41,7 +41,7 @@ else
     else
         LOCAL_SHARED_LIBRARIES += libjsoncpp
     endif
-       
+
     LOCAL_STATIC_LIBRARIES := \
         liblog
 endif
@@ -53,13 +53,13 @@ LOCAL_SRC_FILES := \
    application_manager_native.cpp \
    network_services_native.cpp \
    native.cpp
-   
+
 LOCAL_C_INCLUDES := \
    $(LOCAL_PATH)/../symlink.application_manager/ \
    $(LOCAL_PATH)/../symlink.network_services/ \
    $(LOCAL_PATH)/../symlink.network_services/media_synchroniser/ \
    $(LOCAL_PATH)/../symlink.network_services/app2app/
-   
+
 ifeq ($(ORB_HBBTV_VERSION),204)
 LOCAL_SRC_FILES += json_rpc_native.cpp
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../symlink.network_services/json_rpc/
@@ -68,7 +68,11 @@ endif
 LOCAL_STATIC_LIBRARIES += liborg.orbtv.orblibrary.applicationmanager
 LOCAL_STATIC_LIBRARIES += liborg.orbtv.orblibrary.networkservices
 LOCAL_STATIC_LIBRARIES += libxml2
+ifeq ($(ORB_VENDOR), true)
+LOCAL_STATIC_LIBRARIES += libwebsockets_ORB
+else
 LOCAL_STATIC_LIBRARIES += libwebsockets
+endif
 
 LOCAL_CFLAGS := -Wno-unused-parameter \
    -Wno-unused-variable \

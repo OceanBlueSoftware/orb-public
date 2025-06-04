@@ -14,7 +14,7 @@ ifeq ($(ORB_VENDOR), true)
     LOCAL_STATIC_LIBRARIES := \
         libcap \
         libssl \
-        libwebsockets
+        libwebsockets_ORB
 
     ifeq ($(PLATFORM_SDK_VERSION), 30)
         LOCAL_STATIC_LIBRARIES += libjsoncpp_ORB
