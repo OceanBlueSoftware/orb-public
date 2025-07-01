@@ -147,10 +147,10 @@ bool ApplicationManager::CreateApplication(uint16_t callingAppId, const std::str
                 break;
             }
             appDescription = Ait::FindApp(m_ait.Get(), info.orgId, info.appId);
-            if (appDescription)
+            if (appDescription && Ait::HasViableTransport(appDescription, m_isNetworkAvailable))
             {
                 auto new_app = App::CreateAppFromAitDesc(appDescription, m_currentService,
-                    m_isNetworkAvailable, info.parameters, true, false);
+                    info.parameters, true, false);
                 result = RunApp(new_app);
             }
             else
@@ -497,7 +497,7 @@ bool ApplicationManager::ProcessXmlAit(const std::string &xmlAit, const bool &is
         if (app_description)
         {
             auto new_app = App::CreateAppFromAitDesc(app_description, m_currentService,
-                m_isNetworkAvailable, "", isDvbi, false);
+                "", isDvbi, false);
             result = RunApp(new_app);
             if (!result)
             {
@@ -551,7 +551,6 @@ bool ApplicationManager::RunTeletextApplication()
     }
 
     auto newApp = App::CreateAppFromAitDesc(appDescription, m_currentService,
-        m_isNetworkAvailable,
         "", true, false);
     return RunApp(newApp);
 }
@@ -935,7 +934,7 @@ void ApplicationManager::OnPerformBroadcastAutostart()
     {
         LOG(LOG_ERROR, "OnPerformAutostart Start autostart app.");
 
-        auto newApp = App::CreateAppFromAitDesc(app_desc, m_currentService, m_isNetworkAvailable,
+        auto newApp = App::CreateAppFromAitDesc(app_desc, m_currentService,
             "", true, false);
         if (!RunApp(newApp))
         {
@@ -1149,7 +1148,7 @@ const Ait::S_AIT_APP_DESC * ApplicationManager::GetAutoStartApp(const Ait::S_AIT
     std::string parentalControlRegion3 = m_sessionCallback->GetParentalControlRegion3();
     int parentalControlAge = m_sessionCallback->GetParentalControlAge();
     return Ait::AutoStartApp(aitTable, parentalControlAge, parentalControlRegion,
-        parentalControlRegion3);
+        parentalControlRegion3, m_isNetworkAvailable);
 }
 
 /**

@@ -53,7 +53,6 @@ App App::CreateAppFromUrl(const std::string &url)
 
 App App::CreateAppFromAitDesc(const Ait::S_AIT_APP_DESC *desc,
     const Utils::S_DVB_TRIPLET currentService,
-    bool isNetworkAvailable,
     const std::string &urlParams,
     bool isBroadcast,
     bool isTrusted)
@@ -61,7 +60,7 @@ App App::CreateAppFromAitDesc(const Ait::S_AIT_APP_DESC *desc,
     App app;
     app.versionMinor = INT8_MAX;
 
-    app.baseUrl = Ait::GetBaseURL(desc, currentService, isNetworkAvailable, &app.protocolId);
+    app.baseUrl = Ait::GetBaseURL(desc, currentService, &app.protocolId);
 
     app.entryUrl = Utils::MergeUrlParams(app.baseUrl, desc->location, urlParams);
     app.loadedUrl = app.entryUrl;
