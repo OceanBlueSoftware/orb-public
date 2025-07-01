@@ -147,10 +147,10 @@ bool ApplicationManager::CreateApplication(uint16_t callingAppId, const std::str
                 break;
             }
             appDescription = Ait::FindApp(m_ait.Get(), info.orgId, info.appId);
-            if (appDescription)
+            if (appDescription && Ait::HasViableTransport(appDescription, m_isNetworkAvailable))
             {
                 auto new_app = App::CreateAppFromAitDesc(appDescription, m_currentService,
-                    m_isNetworkAvailable, info.parameters, true, false);
+                    info.parameters, true, false);
                 result = RunApp(new_app);
             }
             else
@@ -275,12 +275,12 @@ uint16_t ApplicationManager::SetKeySetMask(uint16_t appId, uint16_t keySetMask, 
     std::string currentScheme = m_app.getScheme();
 
     // Compatibility check for older versions
-    bool isOldVersion = m_app.versionMinor > 1; 
+    bool isOldVersion = m_app.versionMinor > 1;
     bool isLinkedAppScheme12 = currentScheme == LINKED_APP_SCHEME_1_2;
 
     // Key events VK_STOP, VK_PLAY, VK_PAUSE, VK_PLAY_PAUSE, VK_FAST_FWD,
-    // VK_REWIND and VK_RECORD shall always be available to linked applications 
-    // that are controlling media presentation without requiring the application 
+    // VK_REWIND and VK_RECORD shall always be available to linked applications
+    // that are controlling media presentation without requiring the application
     // to be activated first (2.0.4, App. O.7)
     bool isException = isLinkedAppScheme12 && m_app.versionMinor == 7;
 
@@ -493,7 +493,7 @@ bool ApplicationManager::ProcessXmlAit(const std::string &xmlAit, const bool &is
         if (app_description)
         {
             auto new_app = App::CreateAppFromAitDesc(app_description, m_currentService,
-                m_isNetworkAvailable, "", isDvbi, false);
+                "", isDvbi, false);
             result = RunApp(new_app);
             if (!result)
             {
@@ -547,7 +547,6 @@ bool ApplicationManager::RunTeletextApplication()
     }
 
     auto newApp = App::CreateAppFromAitDesc(appDescription, m_currentService,
-        m_isNetworkAvailable,
         "", true, false);
     return RunApp(newApp);
 }
@@ -740,7 +739,7 @@ void ApplicationManager::OnApplicationPageChanged(uint16_t appId, const std::str
     if (m_app.isRunning && m_app.id == appId)
     {
         m_app.loadedUrl = url;
-        if (!Utils::IsInvalidDvbTriplet(m_currentService) && 
+        if (!Utils::IsInvalidDvbTriplet(m_currentService) &&
             url.find("https://www.live.bbctvapps.co.uk/tap/iplayer") == std::string::npos)
         {
             // For broadcast-related applications we reset the broadcast presentation on page change,
@@ -931,7 +930,7 @@ void ApplicationManager::OnPerformBroadcastAutostart()
     {
         LOG(LOG_ERROR, "OnPerformAutostart Start autostart app.");
 
-        auto newApp = App::CreateAppFromAitDesc(app_desc, m_currentService, m_isNetworkAvailable,
+        auto newApp = App::CreateAppFromAitDesc(app_desc, m_currentService,
             "", true, false);
         if (!RunApp(newApp))
         {
@@ -1145,7 +1144,7 @@ const Ait::S_AIT_APP_DESC * ApplicationManager::GetAutoStartApp(const Ait::S_AIT
     std::string parentalControlRegion3 = m_sessionCallback->GetParentalControlRegion3();
     int parentalControlAge = m_sessionCallback->GetParentalControlAge();
     return Ait::AutoStartApp(aitTable, parentalControlAge, parentalControlRegion,
-        parentalControlRegion3);
+        parentalControlRegion3, m_isNetworkAvailable);
 }
 
 /**
