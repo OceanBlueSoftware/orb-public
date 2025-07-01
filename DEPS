@@ -9,6 +9,7 @@ deps = {
     'external/libwebsockets/v4.3': Var('google_libwebsockets_git') + '/platform/external/libwebsockets' + '@' + Var('google_libwebsockets_revision'),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> c8a5436 (FREE-131 Create libwebsockets patch and implement hook for gclient to apply patch after libwebsockets sync  (#8))
 }
@@ -28,3 +29,6 @@ hooks = [
 =======
 ]
 >>>>>>> c8a5436 (FREE-131 Create libwebsockets patch and implement hook for gclient to apply patch after libwebsockets sync  (#8))
+=======
+}
+>>>>>>> 9606146 (FREE-131 Add DEPS file to download libwebsockets with git)
