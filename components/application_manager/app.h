@@ -40,7 +40,6 @@ public:
 
     static App CreateAppFromAitDesc(const Ait::S_AIT_APP_DESC *desc,
         const Utils::S_DVB_TRIPLET currentService,
-        bool isNetworkAvailable,
         const std::string &urlParams,
         bool isBroadcast,
         bool isTrusted);

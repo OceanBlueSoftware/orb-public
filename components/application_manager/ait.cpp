@@ -119,11 +119,13 @@ void Ait::ApplyAitTable(std::unique_ptr<Ait::S_AIT_TABLE> &aitTable)
  * @param parentalControlAge PC age set in the device.
  * @param parentalControlRegion 2 letter ISO 3166 region code.
  * @param parentalControlRegion3 3 letter ISO 3166 region code.
+ * @param isNetworkAvailable
  * @return App to auto start
  */
 const Ait::S_AIT_APP_DESC * Ait::AutoStartApp(const S_AIT_TABLE *aitTable, int
     parentalControlAge,
-    std::string &parentalControlRegion, std::string &parentalControlRegion3)
+    std::string &parentalControlRegion, std::string &parentalControlRegion3,
+    const bool isNetworkAvailable)
 {
     int index;
     const S_AIT_APP_DESC *app;
@@ -180,22 +182,7 @@ const Ait::S_AIT_APP_DESC * Ait::AutoStartApp(const S_AIT_TABLE *aitTable, int
                     continue;
                 }
 
-                // Check we have a viable transport
-                bool hasViableTransport = false;
-                for (int j = 0; j < candidate->numTransports; j++)
-                {
-                    if (candidate->transportArray[j].protocolId == AIT_PROTOCOL_HTTP ||
-                        candidate->transportArray[j].protocolId == AIT_PROTOCOL_OBJECT_CAROUSEL)
-                    {
-                        if (!candidate->transportArray[j].failedToLoad)
-                        {
-                            hasViableTransport = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (hasViableTransport)
+                if (HasViableTransport(candidate, isNetworkAvailable))
                 {
                     if (app == nullptr || app->appDesc.priority < candidate->appDesc.priority)
                     {
@@ -207,6 +194,47 @@ const Ait::S_AIT_APP_DESC * Ait::AutoStartApp(const S_AIT_TABLE *aitTable, int
     }
 
     return app;
+}
+
+/**
+ * Check whether App description contains a viable transport protocol
+ * @param appDesc
+ * @param isNetworkAvailable
+ * @return true if there is a viable transport
+ */
+bool Ait::HasViableTransport(const S_AIT_APP_DESC *appDesc, const bool isNetworkAvailable)
+{
+	bool hasViableTransport = false;
+	if (isNetworkAvailable)
+	{
+		for (int j = 0; j < appDesc->numTransports; j++)
+		{
+			if (appDesc->transportArray[j].protocolId == AIT_PROTOCOL_HTTP ||
+				appDesc->transportArray[j].protocolId == AIT_PROTOCOL_OBJECT_CAROUSEL)
+			{
+				if (!appDesc->transportArray[j].failedToLoad)
+				{
+					hasViableTransport = true;
+					break;
+				}
+			}
+		}
+	}
+	else // no broadband connection available
+	{
+		for (int j = 0; j < appDesc->numTransports; j++)
+		{
+			if (appDesc->transportArray[j].protocolId == AIT_PROTOCOL_OBJECT_CAROUSEL)
+			{
+				if (!appDesc->transportArray[j].failedToLoad)
+				{
+					hasViableTransport = true;
+					break;
+				}
+			}
+		}
+	}
+	return hasViableTransport;
 }
 
 /**
@@ -383,7 +411,7 @@ bool Ait::PrintInfo(const S_AIT_TABLE *parsedAit)
  * @return
  */
 std::string Ait::GetBaseURL(const Ait::S_AIT_APP_DESC *appDescription,
-    const Utils::S_DVB_TRIPLET currentService, const bool isNetworkAvailable,
+    const Utils::S_DVB_TRIPLET currentService,
     uint16_t *protocolIdSelected)
 {
     std::string result;
@@ -398,8 +426,7 @@ std::string Ait::GetBaseURL(const Ait::S_AIT_APP_DESC *appDescription,
     for (ti = 0; ti != appDescription->numTransports; ti++)
     {
         if (appDescription->transportArray[ti].protocolId == AIT_PROTOCOL_HTTP &&
-            !appDescription->transportArray[ti].failedToLoad &&
-            isNetworkAvailable)
+            !appDescription->transportArray[ti].failedToLoad)
         {
             if (protocolIdSelected != nullptr)
             {
