@@ -13,7 +13,7 @@ hooks = [
   {
     'name': 'apply_libwebsockets_patch',
     'pattern': '.',
-    'action': ['python3', 'apply_patch.py', 'include', 'libwebsockets.patch'],
+    'action': ['python3', '../../../scripts/apply_patch.py', 'include', 'libwebsockets.patch'],
     'cwd': 'external/libwebsockets/v4.3',
   },
 ]
