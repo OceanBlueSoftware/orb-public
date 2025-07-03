@@ -36,7 +36,7 @@ const std::string SSL_PRIVATE_KEY_FILEPATH = "todo.key";
 constexpr int SECS_SINCE_VALID_PING = 3;
 constexpr int SECS_SINCE_VALID_HANGUP = 10;
 constexpr int RX_BUFFER_SIZE = 4096;
-    
+
 class WebSocketService : public ServiceManager::Service {
 public:
     class WebSocketConnection
@@ -92,7 +92,7 @@ protected:
     virtual bool OnConnection(WebSocketConnection *connection) = 0;
     virtual void OnDisconnected(WebSocketConnection *connection) = 0;
     virtual void OnFragmentReceived(WebSocketConnection *connection, std::vector<uint8_t> &&data,
-    bool is_first, bool is_final, bool is_binary);
+        bool is_first, bool is_final, bool is_binary);
     virtual void OnMessageReceived(WebSocketConnection *connection, const std::string &text);
 
 protected:
