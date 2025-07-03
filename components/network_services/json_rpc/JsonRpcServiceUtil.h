@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef OBS_NS_JSON_RPC_SERVICE_UTIL_H
+#define OBS_NS_JSON_RPC_SERVICE_UTIL_H
+
 
 #include <string>
 #include <unordered_map>
@@ -30,73 +32,115 @@ namespace orb
 {
 namespace networkServices { 
 // Constants
-#define F_SUBTITLES "subtitles"
-#define F_DIALOGUE_ENHANCEMENT "dialogueEnhancement"
-#define F_UI_MAGNIFIER "uiMagnifier"
-#define F_HIGH_CONTRAST_UI "highContrastUI"
-#define F_SCREEN_READER "screenReader"
-#define F_RESPONSE_TO_USER_ACTION "responseToUserAction"
-#define F_AUDIO_DESCRIPTION "audioDescription"
-#define F_IN_VISION_SIGNING "inVisionSigning"
 
-#define PC_SUBTITLES "subtitlesPrefChange"
-#define PC_DIALOGUE_ENHANCEMENT "dialogueEnhancementPrefChange"
-#define PC_UI_MAGNIFIER "uiMagnifierPrefChange"
-#define PC_HIGH_CONTRAST_UI "highContrastUIPrefChange"
-#define PC_SCREEN_READER "screenReaderPrefChange"
-#define PC_RESPONSE_TO_USER_ACTION "responseToUserActionPrefChange"
-#define PC_AUDIO_DESCRIPTION "audioDescriptionPrefChange"
-#define PC_IN_VISION_SIGNING "inVisionSigningPrefChange"
+    const std::string F_SUBTITLES = "subtitles";
+    const std::string F_DIALOGUE_ENHANCEMENT = "dialogueEnhancement";
+    const std::string F_UI_MAGNIFIER = "uiMagnifier";
+    const std::string F_HIGH_CONTRAST_UI = "highContrastUI";
+    const std::string F_SCREEN_READER = "screenReader";
+    const std::string F_RESPONSE_TO_USER_ACTION = "responseToUserAction";
+    const std::string F_AUDIO_DESCRIPTION = "audioDescription";
+    const std::string F_IN_VISION_SIGNING = "inVisionSigning";
 
-#define MD_NEGOTIATE_METHODS "org.hbbtv.negotiateMethods"
-#define MD_SUBSCRIBE "org.hbbtv.subscribe"
-#define MD_UNSUBSCRIBE "org.hbbtv.unsubscribe"
-#define MD_NOTIFY "org.hbbtv.notify"
+    const std::string PC_SUBTITLES = "subtitlesPrefChange";
+    const std::string PC_DIALOGUE_ENHANCEMENT = "dialogueEnhancementPrefChange";
+    const std::string PC_UI_MAGNIFIER = "uiMagnifierPrefChange";
+    const std::string PC_HIGH_CONTRAST_UI = "highContrastUIPrefChange";
+    const std::string PC_SCREEN_READER = "screenReaderPrefChange";
+    const std::string PC_RESPONSE_TO_USER_ACTION = "responseToUserActionPrefChange";
+    const std::string PC_AUDIO_DESCRIPTION = "audioDescriptionPrefChange";
+    const std::string PC_IN_VISION_SIGNING = "inVisionSigningPrefChange";
 
-#define MD_AF_FEATURE_SUPPORT_INFO "org.hbbtv.af.featureSupportInfo"
-#define MD_AF_FEATURE_SETTINGS_QUERY "org.hbbtv.af.featureSettingsQuery"
-#define MD_AF_FEATURE_SUPPRESS "org.hbbtv.af.featureSuppress"
+    const std::string MD_NEGOTIATE_METHODS = "org.hbbtv.negotiateMethods";
+    const std::string MD_SUBSCRIBE = "org.hbbtv.subscribe";
+    const std::string MD_UNSUBSCRIBE = "org.hbbtv.unsubscribe";
+    const std::string MD_NOTIFY = "org.hbbtv.notify";
 
-#define MD_AF_DIALOGUE_ENHANCEMENT_OVERRIDE "org.hbbtv.af.dialogueEnhancementOverride"
-#define MD_AF_TRIGGER_RESPONSE_TO_USER_ACTION "org.hbbtv.af.triggerResponseToUserAction"
+    const std::string MD_AF_FEATURE_SUPPORT_INFO = "org.hbbtv.af.featureSupportInfo";
+    const std::string MD_AF_FEATURE_SETTINGS_QUERY = "org.hbbtv.af.featureSettingsQuery";
+    const std::string MD_AF_FEATURE_SUPPRESS = "org.hbbtv.af.featureSuppress";
 
-#define MD_VOICE_READY "org.hbbtv.app.voice.ready"
-#define MD_STATE_MEDIA "org.hbbtv.app.state.media"
+    const std::string MD_AF_DIALOGUE_ENHANCEMENT_OVERRIDE = "org.hbbtv.af.dialogueEnhancementOverride";
+    const std::string MD_AF_TRIGGER_RESPONSE_TO_USER_ACTION = "org.hbbtv.af.triggerResponseToUserAction";
 
-#define MD_INTENT_MEDIA_PAUSE "org.hbbtv.app.intent.media.pause"
-#define MD_INTENT_MEDIA_PLAY "org.hbbtv.app.intent.media.play"
-#define MD_INTENT_MEDIA_FAST_FORWARD "org.hbbtv.app.intent.media.fast-forward"
-#define MD_INTENT_MEDIA_FAST_REVERSE "org.hbbtv.app.intent.media.fast-reverse"
-#define MD_INTENT_MEDIA_STOP "org.hbbtv.app.intent.media.stop"
-#define MD_INTENT_MEDIA_SEEK_CONTENT "org.hbbtv.app.intent.media.seek-content"
-#define MD_INTENT_MEDIA_SEEK_RELATIVE "org.hbbtv.app.intent.media.seek-relative"
-#define MD_INTENT_MEDIA_SEEK_LIVE "org.hbbtv.app.intent.media.seek-live"
-#define MD_INTENT_MEDIA_SEEK_WALLCLOCK "org.hbbtv.app.intent.media.seek-wallclock"
-#define MD_INTENT_SEARCH "org.hbbtv.app.intent.search"
-#define MD_INTENT_DISPLAY "org.hbbtv.app.intent.display"
-#define MD_INTENT_PLAYBACK "org.hbbtv.app.intent.playback"
+    const std::string MD_VOICE_READY = "org.hbbtv.app.voice.ready";
+    const std::string MD_STATE_MEDIA = "org.hbbtv.app.state.media";
 
-// OPAPP Video Window ==> TERMINAL
-#define MD_IPPLAYBACK_STATUS_UPDATE "org.hbbtv.ipplayback.statusUpdate"
-#define MD_IPPLAYBACK_MEDIA_POSITION_UPDATE "org.hbbtv.ipplayback.mediaPositionUpdate"
-#define MD_IPPLAYBACK_SET_COMPONENTS "org.hbbtv.ipplayback.setComponents"
-#define MD_IPPLAYBACK_SET_TIMELINE_MAPPING "org.hbbtv.ipplayback.setTimelineMapping"
-#define MD_IPPLAYBACK_SET_PRESENT_FOLLOWING "org.hbbtv.ipplayback.setPresentFollowing"
+    const std::string MD_INTENT_MEDIA_PAUSE = "org.hbbtv.app.intent.media.pause";
+    const std::string MD_INTENT_MEDIA_PLAY = "org.hbbtv.app.intent.media.play";
+    const std::string MD_INTENT_MEDIA_FAST_FORWARD = "org.hbbtv.app.intent.media.fast-forward";
+    const std::string MD_INTENT_MEDIA_FAST_REVERSE = "org.hbbtv.app.intent.media.fast-reverse";
+    const std::string MD_INTENT_MEDIA_STOP = "org.hbbtv.app.intent.media.stop";
+    const std::string MD_INTENT_MEDIA_SEEK_CONTENT = "org.hbbtv.app.intent.media.seek-content";
+    const std::string MD_INTENT_MEDIA_SEEK_RELATIVE = "org.hbbtv.app.intent.media.seek-relative";
+    const std::string MD_INTENT_MEDIA_SEEK_LIVE = "org.hbbtv.app.intent.media.seek-live";
+    const std::string MD_INTENT_MEDIA_SEEK_WALLCLOCK = "org.hbbtv.app.intent.media.seek-wallclock";
+    const std::string MD_INTENT_SEARCH = "org.hbbtv.app.intent.search";
+    const std::string MD_INTENT_DISPLAY = "org.hbbtv.app.intent.display";
+    const std::string MD_INTENT_PLAYBACK = "org.hbbtv.app.intent.playback";
 
-// TERMINAL ==> OPAPP Video Window
-#define MD_IPPLAYER_SELECT_CHANNEL "org.hbbtv.ipplayer.selectChannel"
-#define MD_IPPLAYER_STOP "org.hbbtv.ipplayer.stop"
-#define MD_IPPLAYER_PLAY "org.hbbtv.ipplayer.play"
-#define MD_IPPLAYER_SET_VIDEO_WINDOW "org.hbbtv.ipplayer.setVideoWindow"
-#define MD_IPPLAYER_SET_RELATIVE_VOLUME "org.hbbtv.ipplayer.setRelativeVolume"
-#define MD_IPPLAYER_PAUSE "org.hbbtv.ipplayer.pause"
-#define MD_IPPLAYER_RESUME "org.hbbtv.ipplayer.resume"
-#define MD_IPPLAYER_SEEK "org.hbbtv.ipplayer.seek"
-#define MD_IPPLAYER_SELECT_COMPONENTS "org.hbbtv.ipplayer.selectComponents"
-#define MD_IPPLAYER_RESOLVE_TIMELINE "org.hbbtv.ipplayer.resolveTimeline"
+    // OPAPP Video Window ==> TERMINAL
+    const std::string MD_IPPLAYBACK_STATUS_UPDATE = "org.hbbtv.ipplayback.statusUpdate";
+    const std::string MD_IPPLAYBACK_MEDIA_POSITION_UPDATE = "org.hbbtv.ipplayback.mediaPositionUpdate";
+    const std::string MD_IPPLAYBACK_SET_COMPONENTS = "org.hbbtv.ipplayback.setComponents";
+    const std::string MD_IPPLAYBACK_SET_TIMELINE_MAPPING = "org.hbbtv.ipplayback.setTimelineMapping";
+    const std::string MD_IPPLAYBACK_SET_PRESENT_FOLLOWING = "org.hbbtv.ipplayback.setPresentFollowing";
 
-#define OPTIONAL_INT_NOT_SET -999999
-#define OPTIONAL_STR_NOT_SET ""
+    // TERMINAL ==> OPAPP Video Window
+    const std::string MD_IPPLAYER_SELECT_CHANNEL = "org.hbbtv.ipplayer.selectChannel";
+    const std::string MD_IPPLAYER_STOP = "org.hbbtv.ipplayer.stop";
+    const std::string MD_IPPLAYER_PLAY = "org.hbbtv.ipplayer.play";
+    const std::string MD_IPPLAYER_SET_VIDEO_WINDOW = "org.hbbtv.ipplayer.setVideoWindow";
+    const std::string MD_IPPLAYER_SET_RELATIVE_VOLUME = "org.hbbtv.ipplayer.setRelativeVolume";
+    const std::string MD_IPPLAYER_PAUSE = "org.hbbtv.ipplayer.pause";
+    const std::string MD_IPPLAYER_RESUME = "org.hbbtv.ipplayer.resume";
+    const std::string MD_IPPLAYER_SEEK = "org.hbbtv.ipplayer.seek";
+    const std::string MD_IPPLAYER_SELECT_COMPONENTS = "org.hbbtv.ipplayer.selectComponents";
+    const std::string MD_IPPLAYER_RESOLVE_TIMELINE = "org.hbbtv.ipplayer.resolveTimeline";
+
+    constexpr int OPTIONAL_INT_NOT_SET = -999999;
+    const std::string OPTIONAL_STR_NOT_SET = "";
+
+    const std::string JSONRPC_VERSION_KEY = "jsonrpc";
+    const std::string JSONRPC_ID_KEY = "id";
+    const std::string JSONRPC_METHOD_KEY = "method";
+    const std::string JSONRPC_PARAMS_KEY = "params";
+    const std::string JSONRPC_RESULT_KEY = "result";
+    const std::string JSONRPC_ERROR_KEY = "error";
+    const std::string JSONRPC_SESSION_ID_KEY = "sessionID";
+    const std::string JSONRPC_MSG_TYPE_KEY = "msgType";
+    const std::string JSONRPC_VALUE_KEY = "value";
+    const std::string JSONRPC_FEATURE_KEY = "feature";    
+    const std::string JSONRPC_ORIGIN_KEY ="origin";
+    const std::string JSONRPC_ANCHOR_KEY = "anchor";
+    const std::string JSONRPC_STATE_KEY = "state";
+    const std::string JSONRPC_AVAILABLE_KEY = "available";
+    const std::string JSONRPC_ENABLED_KEY = "enabled";
+    const std::string JSONRPC_ACCESSIBILITY_KEY = "accessibility";
+    const std::string JSONRPC_OFFSET_KEY = "offset";
+    const std::string JSONRPC_CHANNEL_TYPE_KEY = "channelType";
+    const std::string JSONRPC_ID_TYPE_KEY = "idType";
+    const std::string JSONRPC_IP_BROADCAST_ID_KEY = "ipBroadcastID";
+    const std::string JSONRPC_VOLUME_KEY = "volume";
+
+    const std::string JSONRPC_VIDEO_COMPONENTS_KEY = "videoComponents";
+    const std::string JSONRPC_AUDIO_COMPONENTS_KEY = "audioComponents";
+    const std::string JSONRPC_SUBTITLE_COMPONENTS_KEY = "subtitleComponents";
+
+
+    const std::string JSONRPC_TERMINAL_TO_APP_KEY = "terminalToApp";
+    const std::string JSONRPC_APP_TO_TERMINAL_KEY = "appToTerminal";
+
+    const std::string JSONRPC_VERSION = "2.0";
+    const std::string JSONRPC_VOICE = "voice";
+
+    const std::string PLAYER_STATE_NO_MEDIA = "no-media";
+    const std::string PLAYER_STATE_ERROR = "error";
+    const std::string PLAYER_STATE_BUFFERING = "buffering";
+    const std::string PLAYER_STATE_PAUSED = "paused";
+    const std::string PLAYER_STATE_PLAYING = "playing";
+    const std::string PLAYER_STATE_STOPPED = "stopped";
+    
 
     const static std::map<std::string, int> ACCESSIBILITY_FEATURE_IDS = {
         {F_SUBTITLES, 0},
@@ -192,3 +236,5 @@ namespace networkServices {
     };
 } // namespace networkServices
 } // namespace orb
+
+#endif // OBS_NS_JSON_RPC_SERVICE_UTIL_H

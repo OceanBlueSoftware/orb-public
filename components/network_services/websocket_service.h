@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBS_NS_WEBSOCKET_SERVICE_
-#define OBS_NS_WEBSOCKET_SERVICE_
+#ifndef OBS_NS_WEBSOCKET_SERVICE_H
+#define OBS_NS_WEBSOCKET_SERVICE_H
 
 #include "service_manager.h"
 
@@ -26,10 +26,17 @@
 #include <mutex>
 #include <libwebsockets.h>
 #include <thread> 
-#include <log.h>
 
 namespace orb {
 namespace networkServices {
+
+const std::string VHOST_NAME = "localhost";
+const std::string SSL_CERT_FILEPATH = "todo.cert";
+const std::string SSL_PRIVATE_KEY_FILEPATH = "todo.key";
+constexpr int SECS_SINCE_VALID_PING = 3;
+constexpr int SECS_SINCE_VALID_HANGUP = 10;
+constexpr int RX_BUFFER_SIZE = 4096;
+    
 class WebSocketService : public ServiceManager::Service {
 public:
     class WebSocketConnection
@@ -119,5 +126,5 @@ private:
 } // namespace networkServices
 } // namespace orb
 
-#endif // OBS_NS_WEBSOCKET_SERVICE_
+#endif // OBS_NS_WEBSOCKET_SERVICE_H
 

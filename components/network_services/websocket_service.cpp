@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-
+#include <log.h>
 #include "websocket_service.h"
 
 #define         LWS_PROTOCOL_LIST_TERM   { NULL, NULL, 0, 0, 0, NULL, 0 }
 
 namespace orb {
 namespace networkServices {
-#define VHOST_NAME "localhost"
-#define SSL_CERT_FILEPATH "todo.cert"
-#define SSL_PRIVATE_KEY_FILEPATH "todo.key"
-#define SECS_SINCE_VALID_PING 3
-#define SECS_SINCE_VALID_HANGUP 10
-#define RX_BUFFER_SIZE 4096
 
 static int sNextConnectionId = 0;
 
@@ -114,7 +108,7 @@ WebSocketService::WebSocketService(const std::string &protocol_name, int port, b
         .port = port,
         .options = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE
             /* | LWS_SERVER_OPTION_VHOST_UPG_STRICT_HOST_CHECK */,
-        .vhost_name = VHOST_NAME,
+        .vhost_name = VHOST_NAME.c_str(),
 #if LWS_VERSION_4 == 1
         .retry_and_idle_policy = &retry_,
 #endif
@@ -123,8 +117,8 @@ WebSocketService::WebSocketService(const std::string &protocol_name, int port, b
     {
         LOGI("Using SSL for WebSocketService");
         mContextInfo.options |= LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
-        mContextInfo.ssl_cert_filepath = SSL_CERT_FILEPATH;
-        mContextInfo.ssl_private_key_filepath = SSL_PRIVATE_KEY_FILEPATH;
+        mContextInfo.ssl_cert_filepath = SSL_CERT_FILEPATH.c_str();
+        mContextInfo.ssl_private_key_filepath = SSL_PRIVATE_KEY_FILEPATH.c_str();
     }
     if (!mInterfaceName.empty())
     {

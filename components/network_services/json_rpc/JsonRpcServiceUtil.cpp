@@ -200,11 +200,11 @@ namespace networkServices
         // The voice value should be present if the enabled value is set to true.
         if (voice == "default" || voice == "female" || voice == "male")
         {
-            value["voice"] = voice;
+            value[JSONRPC_VOICE] = voice;
         }
         else if (enabled)
         {
-            value["voice"] = "default";
+            value[JSONRPC_VOICE] = "default";
         }
         if (language != OPTIONAL_STR_NOT_SET)
         {
@@ -395,9 +395,9 @@ namespace networkServices
     Json::Value JsonRpcServiceUtil::CreateFeatureSettingsQuery(const std::string& feature, const Json::Value& value)
     {
         Json::Value result;
-        result["method"] = MD_AF_FEATURE_SETTINGS_QUERY;
-        result["feature"] = feature;
-        result["value"] = value;
+        result[JSONRPC_METHOD_KEY] = MD_AF_FEATURE_SETTINGS_QUERY;
+        result[JSONRPC_FEATURE_KEY] = feature;
+        result[JSONRPC_VALUE_KEY] = value;
         return result;
     }
 
@@ -410,9 +410,9 @@ namespace networkServices
     Json::Value JsonRpcServiceUtil::CreateNotifyRequest(const Json::Value& params)
     {
         Json::Value jsonResponse;
-        jsonResponse["jsonrpc"] = "2.0";
-        jsonResponse["method"] = MD_NOTIFY;
-        jsonResponse["params"] = params;
+        jsonResponse[JSONRPC_VERSION_KEY] = JSONRPC_VERSION;
+        jsonResponse[JSONRPC_METHOD_KEY] = MD_NOTIFY;
+        jsonResponse[JSONRPC_PARAMS_KEY] = params;
         return jsonResponse;
     }
 
@@ -428,10 +428,10 @@ namespace networkServices
         Json::Value& params)
     {
         Json::Value jsonClientResquest;
-        jsonClientResquest["jsonrpc"] = "2.0";
-        jsonClientResquest["id"] = DecodeJsonId(id);
-        jsonClientResquest["params"] = params;
-        jsonClientResquest["method"] = method;
+        jsonClientResquest[JSONRPC_VERSION_KEY] = JSONRPC_VERSION;
+        jsonClientResquest[JSONRPC_ID_KEY] = DecodeJsonId(id);
+        jsonClientResquest[JSONRPC_PARAMS_KEY] = params;
+        jsonClientResquest[JSONRPC_METHOD_KEY] = method;
         return jsonClientResquest;
     }
 
@@ -447,9 +447,9 @@ namespace networkServices
     Json::Value JsonRpcServiceUtil::CreateJsonResponse(const std::string& id, const Json::Value& result)
     {
         Json::Value jsonResponse;
-        jsonResponse["jsonrpc"] = "2.0";
-        jsonResponse["id"] = DecodeJsonId(id);
-        jsonResponse["result"] = result;
+        jsonResponse[JSONRPC_VERSION_KEY] = JSONRPC_VERSION;
+        jsonResponse[JSONRPC_ID_KEY] = DecodeJsonId(id);
+        jsonResponse[JSONRPC_RESULT_KEY] = result;
         return jsonResponse;
     }
 
@@ -463,9 +463,9 @@ namespace networkServices
     Json::Value JsonRpcServiceUtil::CreateJsonErrorResponse(const std::string& id, const Json::Value& error)
     {
         Json::Value jsonResponse;
-        jsonResponse["jsonrpc"] = "2.0";
-        jsonResponse["id"] = DecodeJsonId(id);
-        jsonResponse["error"] = error;
+        jsonResponse[JSONRPC_VERSION_KEY] = JSONRPC_VERSION;
+        jsonResponse[JSONRPC_ID_KEY] = DecodeJsonId(id);
+        jsonResponse[JSONRPC_ERROR_KEY] = error;
         return jsonResponse;
     }
 
@@ -599,13 +599,13 @@ namespace networkServices
     */
     std::string JsonRpcServiceUtil::GetId(const Json::Value& obj) 
     {
-      if (!HasParam(obj, "id", Json::stringValue) &&
-          !HasParam(obj, "id", Json::intValue) &&
-          !HasParam(obj, "id", Json::uintValue))
+      if (!HasParam(obj, JSONRPC_ID_KEY, Json::stringValue) &&
+          !HasParam(obj, JSONRPC_ID_KEY, Json::intValue) &&
+          !HasParam(obj, JSONRPC_ID_KEY, Json::uintValue))
         {
             return "";
         }
-        return EncodeJsonId(obj["id"]);
+        return EncodeJsonId(obj[JSONRPC_ID_KEY]);
     }
 
     /**
@@ -614,16 +614,16 @@ namespace networkServices
     * @return The feature ID as an integer, or -1 if the feature is not specified or invalid.
     */
     int JsonRpcServiceUtil::GetAccessibilityFeatureId(const Json::Value& obj) {
-        if (!HasJsonParam(obj, "params"))
+        if (!HasJsonParam(obj, JSONRPC_PARAMS_KEY))
         {
             return -1;
         }
-        if (!HasParam(obj["params"], "feature", Json::stringValue))
+        if (!HasParam(obj[JSONRPC_PARAMS_KEY], JSONRPC_FEATURE_KEY, Json::stringValue))
         {
             return -1;
         }
 
-        std::string feature = obj["params"]["feature"].asString();
+        std::string feature = obj[JSONRPC_PARAMS_KEY][JSONRPC_FEATURE_KEY].asString();
         return GetAccessibilityFeatureId(feature);
     }
 

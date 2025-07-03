@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef OBS_NS_JSON_RPC_CALLBACK_H
+#define OBS_NS_JSON_RPC_CALLBACK_H
 
 #include "JsonRpcService.h"
 #include "log.h"
@@ -108,3 +109,5 @@ namespace networkServices
     }; 
 } // namespace networkServices
 } // namespace orb
+
+#endif // OBS_NS_JSON_RPC_CALLBACK_H

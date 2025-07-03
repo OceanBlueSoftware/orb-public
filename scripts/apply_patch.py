@@ -4,8 +4,6 @@ import os
 
 def apply_patch(target_path, patch_file_path):
     """Applies a patch file to a source folder."""
-    print(f"Applying patch {patch_file_path} to libwebsockets...")
-
     try:
         abspath_target_path = os.path.abspath(target_path)
         subprocess.run(
@@ -15,9 +13,9 @@ def apply_patch(target_path, patch_file_path):
             text=True,  # Capture stdout/stderr as text
             capture_output=True # Capture output for debugging
         )
-        print(f"Patch '{patch_file_path}' applied successfully to libwebsockets '{abspath_target_path}'.")
+        print(f"Patch '{patch_file_path}' applied successfully to folder '{abspath_target_path}'.")
     except subprocess.CalledProcessError as e:
-        print(f"ERROR: Failed to apply patch '{patch_file_path}' to libwebsockets '{abspath_target_path}'.")
+        print(f"ERROR: Failed to apply patch '{patch_file_path}' to folder '{abspath_target_path}'.")
         print(f"Command: {' '.join(e.cmd)}")
         print(f"Stdout:\n{e.stdout}")
         print(f"Stderr:\n{e.stderr}")

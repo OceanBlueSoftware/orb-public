@@ -18,8 +18,8 @@
  * Note: This file is part of the platform-agnostic application manager library.
  */
 
-#pragma once
-
+#ifndef OBS_NS_LOG_H
+#define OBS_NS_LOG_H
 
 #ifdef IS_CHROMIUM
 #include <base/logging.h>
@@ -40,4 +40,7 @@ namespace networkServices {
 
 } // namespace networkServices
 } // namespace orb
+
+#endif // OBS_NS_LOG_H
+
 

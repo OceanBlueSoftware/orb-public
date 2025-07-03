@@ -5,7 +5,8 @@
  * the top level of this repository.
  */
 
-#pragma once
+#ifndef OBS_NS_JSON_RPC_SERVICE_H
+#define OBS_NS_JSON_RPC_SERVICE_H
 
 #include "websocket_service.h"
 
@@ -417,3 +418,5 @@ private:
 };
 } // namespace networkServices
 } // namespace orb
+
+#endif //OBS_NS_JSON_RPC_SERVICE_H 

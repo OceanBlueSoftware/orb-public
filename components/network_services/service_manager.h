@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBS_NS_SERVICE_MANAGER_
-#define OBS_NS_SERVICE_MANAGER_
+#ifndef OBS_NS_SERVICE_MANAGER_H
+#define OBS_NS_SERVICE_MANAGER_H
 
 #include <memory>
 #include <unordered_map>
@@ -94,5 +94,5 @@ private:
 } // namespace networkServices
 } // namespace orb  
 
-#endif // OBS_NS_SERVICE_MANAGER_
+#endif // OBS_NS_SERVICE_MANAGER_H
 
