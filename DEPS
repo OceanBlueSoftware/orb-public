@@ -10,6 +10,9 @@ deps = {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c8a5436 (FREE-131 Create libwebsockets patch and implement hook for gclient to apply patch after libwebsockets sync  (#8))
 =======
 >>>>>>> c8a5436 (FREE-131 Create libwebsockets patch and implement hook for gclient to apply patch after libwebsockets sync  (#8))
 }
@@ -22,6 +25,7 @@ hooks = [
     'cwd': 'external/libwebsockets/v4.3',
   },
 <<<<<<< HEAD
+<<<<<<< HEAD
 ]
 =======
 }
@@ -32,3 +36,6 @@ hooks = [
 =======
 }
 >>>>>>> 9606146 (FREE-131 Add DEPS file to download libwebsockets with git)
+=======
+]
+>>>>>>> c8a5436 (FREE-131 Create libwebsockets patch and implement hook for gclient to apply patch after libwebsockets sync  (#8))
