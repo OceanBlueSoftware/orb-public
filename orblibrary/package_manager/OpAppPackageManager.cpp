@@ -7,6 +7,36 @@
 #include <vector>
 #include <openssl/sha.h>
 #include <iostream>
+#include <base/logging.h>
+#include "json/json.h"
+
+static int readJsonField(
+  const std::string& jsonFilePath,
+  const std::string& fieldName,
+  std::string& fieldValue,
+  const std::string& defaultValue = ""
+)
+{
+  // Check if the file exists
+  if (!std::filesystem::exists(jsonFilePath)) {
+    return -1; // File does not exist
+  }
+
+  // Read the JSON file
+  std::ifstream jsonFile(jsonFilePath);
+  Json::Value json;
+  jsonFile >> json;
+
+  // Check if the field exists
+  if (json.isMember(fieldName)) {
+    fieldValue = json[fieldName].asString();
+    if (fieldValue.empty()) {
+      fieldValue = defaultValue;
+    }
+    return 0;
+  }
+  return -2;
+}
 
 // Static member initialization
 std::unique_ptr<OpAppPackageManager> OpAppPackageManager::s_Instance = nullptr;
@@ -184,10 +214,21 @@ bool OpAppPackageManager::isPackageInstalled(const std::string& packagePath) con
   std::string packageHash = calculateSHA256Hash(packagePath);
 
   // Get the hash of the installed package
-  std::string installedPackageHash = calculateSHA256Hash(m_Configuration.m_PackageHashFilePath);
+  std::string installedPackageHash;
+  int result = readJsonField(m_Configuration.m_PackageHashFilePath, "hash", installedPackageHash);
+  if (result == 0) {
+    // Compare the hashes and return the result
+    return packageHash == installedPackageHash;
+  }
+  else if (result == -1) {
+    // File does not exist, so the package is not installed
+    LOG(INFO) << "Package receipt file does not exist: " << m_Configuration.m_PackageHashFilePath;
+    return false;
+  }
 
-  // Compare the hashes and return the result
-  return packageHash == installedPackageHash;
+  // else:Error reading the file
+  LOG(ERROR) << "Error reading package receipt file: " << m_Configuration.m_PackageHashFilePath;
+  return false;
 }
 
 PackageOperationResult OpAppPackageManager::getPackageFiles()
