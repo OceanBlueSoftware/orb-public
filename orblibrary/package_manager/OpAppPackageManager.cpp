@@ -43,7 +43,7 @@ std::unique_ptr<OpAppPackageManager> OpAppPackageManager::s_Instance = nullptr;
 std::mutex OpAppPackageManager::s_InstanceMutex;
 
 OpAppPackageManager::OpAppPackageManager(const Configuration& configuration)
-  : m_PackageStatus(PackageStatus::DontKnow)
+  : m_PackageStatus(PackageStatus::None)
   , m_IsRunning(false)
   , m_IsUpdating(false)
   , m_Mutex()
@@ -55,7 +55,7 @@ OpAppPackageManager::OpAppPackageManager(const Configuration& configuration)
 }
 
 OpAppPackageManager::OpAppPackageManager(const Configuration& configuration, std::unique_ptr<IHashCalculator> hashCalculator)
-  : m_PackageStatus(PackageStatus::DontKnow)
+  : m_PackageStatus(PackageStatus::None)
   , m_IsRunning(false)
   , m_IsUpdating(false)
   , m_Mutex()
@@ -154,23 +154,18 @@ bool OpAppPackageManager::isUpdating() const
     return m_IsUpdating;
 }
 
-OpAppPackageManager::PackageStatus OpAppPackageManager::getPackageStatus() const
-{
-  return m_PackageStatus;
-}
-
 void OpAppPackageManager::checkForUpdates()
 {
   m_IsRunning = true;
 
-  doPackageFileCheck();
+  m_PackageStatus = doPackageFileCheck();
 
   // Keep the worker thread running by adding a small delay
   // This prevents the thread from exiting immediately
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
-void OpAppPackageManager::doPackageFileCheck()
+OpAppPackageManager::PackageStatus OpAppPackageManager::doPackageFileCheck()
 {
   // Check the m_PackageLocation for any new packages
   // Get the list of files in m_PackageLocation with file ending with m_PackageSuffix
@@ -178,9 +173,8 @@ void OpAppPackageManager::doPackageFileCheck()
 
   // Check if there was an error getting package files
   if (!packageFilesResult.success) {
-    m_PackageStatus = PackageStatus::ConfigurationError;
     m_LastErrorMessage = packageFilesResult.errorMessage;
-    return;
+    return PackageStatus::ConfigurationError;
   }
 
   // Get the actual package files
@@ -188,7 +182,7 @@ void OpAppPackageManager::doPackageFileCheck()
 
   // Process found no package files, no change
   if (packageFiles.empty()) {
-    return;
+    return PackageStatus::NoUpdateAvailable;
   }
 
   // We have exactly one package file (getPackageFiles would have returned error if more than one)
@@ -196,10 +190,10 @@ void OpAppPackageManager::doPackageFileCheck()
 
   // Check if the package is installed by comparing hashes
   if (isPackageInstalled(packageFile)) {
-    m_PackageStatus = PackageStatus::Installed;
-  } else {
-    m_PackageStatus = PackageStatus::UpdateAvailable;
+    return PackageStatus::Installed;
   }
+
+  return PackageStatus::UpdateAvailable;
 }
 
 bool OpAppPackageManager::isPackageInstalled(const std::string& packagePath) const

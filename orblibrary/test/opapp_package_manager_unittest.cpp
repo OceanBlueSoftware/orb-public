@@ -243,11 +243,10 @@ TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_NoUpdates)
   OpAppPackageManager& packageManager = OpAppPackageManager::getInstance(configuration);
 
   // WHEN: doPackageFileCheck is called
-  EXPECT_EQ(packageManager.getPackageStatus(), OpAppPackageManager::PackageStatus::DontKnow);
-  packageManager.doPackageFileCheck();
+  OpAppPackageManager::PackageStatus status = packageManager.doPackageFileCheck();
 
-  // THEN: the package status is unchanged
-  EXPECT_EQ(packageManager.getPackageStatus(), OpAppPackageManager::PackageStatus::DontKnow);
+  // THEN: the package status is NoUpdateAvailable
+  EXPECT_EQ(status, OpAppPackageManager::PackageStatus::NoUpdateAvailable);
 }
 
 TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_UpdatesAvailable)
@@ -264,10 +263,10 @@ TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_UpdatesAvailable)
   OpAppPackageManager& packageManager = OpAppPackageManager::getInstance(configuration);
 
   // WHEN: doPackageFileCheck is called
-  packageManager.doPackageFileCheck();
+  OpAppPackageManager::PackageStatus status = packageManager.doPackageFileCheck();
 
   // THEN: the package status is UpdateAvailable
-  EXPECT_EQ(packageManager.getPackageStatus(), OpAppPackageManager::PackageStatus::UpdateAvailable);
+  EXPECT_EQ(status, OpAppPackageManager::PackageStatus::UpdateAvailable);
 }
 
 TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_UpdatesAvailable_NoExistingPackage)
@@ -286,10 +285,10 @@ TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_UpdatesAvailable_NoExistingP
   OpAppPackageManager& packageManager = OpAppPackageManager::getInstance(configuration);
 
   // WHEN: doPackageFileCheck is called
-  packageManager.doPackageFileCheck();
+  OpAppPackageManager::PackageStatus status = packageManager.doPackageFileCheck();
 
   // THEN: the package status is UpdateAvailable
-  EXPECT_EQ(packageManager.getPackageStatus(), OpAppPackageManager::PackageStatus::UpdateAvailable);
+  EXPECT_EQ(status, OpAppPackageManager::PackageStatus::UpdateAvailable);
 }
 
 TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_UpdatesAvailable_ExistingPackage_HashSame)
@@ -312,10 +311,10 @@ TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_UpdatesAvailable_ExistingPac
 
   // WHEN: checking package status
   OpAppPackageManager& packageManager = OpAppPackageManager::getInstance(configuration, std::move(mockCalculator));
-  packageManager.doPackageFileCheck();
+  OpAppPackageManager::PackageStatus status = packageManager.doPackageFileCheck();
 
   // THEN: the package status is Installed
-  EXPECT_EQ(packageManager.getPackageStatus(), OpAppPackageManager::PackageStatus::Installed);
+  EXPECT_EQ(status, OpAppPackageManager::PackageStatus::Installed);
 
   // Clean up test files
   std::remove(packagePath.c_str());
@@ -341,10 +340,10 @@ TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_UpdatesAvailable_NoHashFile)
 
   // WHEN: checking package status
   OpAppPackageManager& packageManager = OpAppPackageManager::getInstance(configuration, std::move(mockCalculator));
-  packageManager.doPackageFileCheck();
+  OpAppPackageManager::PackageStatus status = packageManager.doPackageFileCheck();
 
   // THEN: the package should be considered update available (no hash file means not installed)
-  EXPECT_EQ(packageManager.getPackageStatus(), OpAppPackageManager::PackageStatus::UpdateAvailable);
+  EXPECT_EQ(status, OpAppPackageManager::PackageStatus::UpdateAvailable);
 
   // Clean up test files
   std::remove(packagePath.c_str());
@@ -369,10 +368,10 @@ TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_UpdatesAvailable_InvalidHash
 
   // WHEN: checking package status
   OpAppPackageManager& packageManager = OpAppPackageManager::getInstance(configuration, std::move(mockCalculator));
-  packageManager.doPackageFileCheck();
+  OpAppPackageManager::PackageStatus status = packageManager.doPackageFileCheck();
 
   // THEN: the package should be considered update available (invalid hash file means not installed)
-  EXPECT_EQ(packageManager.getPackageStatus(), OpAppPackageManager::PackageStatus::UpdateAvailable);
+  EXPECT_EQ(status, OpAppPackageManager::PackageStatus::UpdateAvailable);
 
   // Clean up test files
   std::remove(packagePath.c_str());
@@ -400,10 +399,10 @@ TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_UpdatesAvailable_SameHash)
 
   // WHEN: checking package status
   OpAppPackageManager& packageManager = OpAppPackageManager::getInstance(configuration, std::move(mockCalculator));
-  packageManager.doPackageFileCheck();
+  OpAppPackageManager::PackageStatus status = packageManager.doPackageFileCheck();
 
   // THEN: the package should be considered installed (same hash)
-  EXPECT_EQ(packageManager.getPackageStatus(), OpAppPackageManager::PackageStatus::Installed);
+  EXPECT_EQ(status, OpAppPackageManager::PackageStatus::Installed);
 
   // Clean up test files
   std::remove(packagePath.c_str());
@@ -431,10 +430,10 @@ TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_UpdatesAvailable_DifferentHa
 
   // WHEN: checking package status
   OpAppPackageManager& packageManager = OpAppPackageManager::getInstance(configuration, std::move(mockCalculator));
-  packageManager.doPackageFileCheck();
+  OpAppPackageManager::PackageStatus status = packageManager.doPackageFileCheck();
 
   // THEN: the package should be considered update available (different hashes)
-  EXPECT_EQ(packageManager.getPackageStatus(), OpAppPackageManager::PackageStatus::UpdateAvailable);
+  EXPECT_EQ(status, OpAppPackageManager::PackageStatus::UpdateAvailable);
 
   // Clean up test files
   std::remove(packagePath.c_str());
@@ -836,8 +835,8 @@ TEST_F(OpAppPackageManagerTest, TestCheckForUpdates_MultiplePackageFiles_Returns
 
   // WHEN: doPackageFileCheck is called
   // THEN: it should set status to ConfigurationError
-  packageManager.doPackageFileCheck();
-  EXPECT_EQ(packageManager.getPackageStatus(), OpAppPackageManager::PackageStatus::ConfigurationError);
+  OpAppPackageManager::PackageStatus status = packageManager.doPackageFileCheck();
+  EXPECT_EQ(status, OpAppPackageManager::PackageStatus::ConfigurationError);
   EXPECT_FALSE(packageManager.getLastErrorMessage().empty());
 
   // Clean up test files
