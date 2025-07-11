@@ -25,6 +25,7 @@ import java.util.UUID;
 
 public class OrbSessionFactory {
     private static final String TAG = OrbSessionFactory.class.getSimpleName();
+    private static final String USER_AGENT = "Mozilla/5.0 (Linux; Android 14; daisy Build/AP2A.240905.003.F1; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/122.0.6261.27 Mobile Safari/537.36 HbbTV/1.6.1 (+DRM; Amlogic; daisy; 1.0; 1.0; com.amlogic;) amlogic-alpha eng";
 
     /**
      * Create a TV browser session.
@@ -116,7 +117,7 @@ public class OrbSessionFactory {
             this.app2appRemotePort = app2appRemotePort;
             this.jsonRpcPort = jsonRpcPort;
             this.mainActivityUuid = mainActivityUuid;
-            this.userAgent = userAgent;
+            this.userAgent = USER_AGENT; // userAgent;
             this.sansSerifFontFamily = sansSerifFontFamily;
             this.fixedFontFamily = fixedFontFamily;
             this.doNotTrackEnabled = doNotTrackEnabled;
