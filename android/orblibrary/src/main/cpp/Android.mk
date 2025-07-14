@@ -24,7 +24,6 @@ ifeq ($(ORB_VENDOR), true)
         libcrypto_static \
         libjsoncpp_ORB
 
-    LOCAL_HEADER_LIBRARIES := jni_headers
 else
     LOCAL_SHARED_LIBRARIES := \
         libcap \
@@ -35,6 +34,8 @@ else
     LOCAL_STATIC_LIBRARIES := \
         liblog
 endif
+
+LOCAL_HEADER_LIBRARIES := jni_headers
 
 LOCAL_SRC_FILES := \
    jni_utils.cpp \
