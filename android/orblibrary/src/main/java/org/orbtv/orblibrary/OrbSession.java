@@ -433,6 +433,7 @@ class OrbSession implements IOrbSession {
             Log.e(TAG, "AIT section data is null.");
             return;
         }
+        Log.i(TAG, "processAitSection: pid=" + aitPid + ", srvId=" + serviceId + ", length=" + data.length);
         mApplicationManager.processAitSection(aitPid, serviceId, data);
     }
 
@@ -787,7 +788,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a response message for a result of overriding dialogue enhancement
      *
      * @param connection              The request and response should have the same value
@@ -807,7 +808,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a response message for a result of trigger response to user action
      *
      * @param connection The request and response should have the same value
@@ -827,7 +828,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a response message for the support information of a feature
      *
      * @param connection The request and response should have the same value
@@ -846,7 +847,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a response message for suppressing the support of a feature
      *
      * @param connection The request and response should have the same value
@@ -865,7 +866,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send an error message
      *
      * @param connection The request and response should have the same value
@@ -884,7 +885,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send an error message with some data
      *
      * @param connection The request and response should have the same value
@@ -903,7 +904,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a message with the user settings of subtitles
      *
      * @param connection        The request and response should have the same value
@@ -969,7 +970,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a message with the settings of dialogue enhancement
      *
      * @param connection     The request and response should have the same value
@@ -1012,7 +1013,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a message with the settings of a user Interface Magnification feature
      *
      * @param connection The request and response should have the same value
@@ -1048,7 +1049,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a message with the settings of a high contrast UI feature
      *
      * @param connection The request and response should have the same value
@@ -1084,7 +1085,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a message with the settings of a screen reader feature
      *
      * @param connection The request and response should have the same value
@@ -1125,7 +1126,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a message with the settings of a "response to a user action" feature
      *
      * @param connection The request and response should have the same value
@@ -1161,7 +1162,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a message with the settings of an audio description feature
      *
      * @param connection           The request and response should have the same value
@@ -1200,7 +1201,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send a message with the settings of an in-vision signing feature
      *
      * @param connection The request and response should have the same value
@@ -1234,7 +1235,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send an intent for a request to operate the media playback
      *
      * @param cmd The index of a basic intent of media playback
@@ -1255,7 +1256,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send an intent for a request to seek a time position relative to the start or end of the media content
      *
      * @param anchor The value indicates an anchor point of the content
@@ -1274,7 +1275,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send an intent for a request to seek a time position relative to the current time of the media content
      *
      * @param offset The number value for the current time position, a positive or negative number of seconds
@@ -1290,7 +1291,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send an intent for a request to seek a time position relative to the live edge of the media content
      *
      * @param offset The number value for the time position at or before the live edge, zero or negative number of seconds
@@ -1306,7 +1307,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send an intent for a request to seek a time position relating to absolute wall clock time
      *
      * @param dateTime The value conveys the wall clock time, in internet date-time format
@@ -1322,7 +1323,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send an intent to request a search of content available
      *
      * @param query The string value is the search term specified by the user.
@@ -1338,7 +1339,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send an intent to request a display (but not playback) of a specific identified piece of content
      *
      * @param mediaId The value for a URI uniquely identifying a piece of content
@@ -1354,7 +1355,7 @@ class OrbSession implements IOrbSession {
 
     /**
      * @since 204
-     * 
+     *
      * Called to send an intent to request immediate playback of a specific identified piece of content
      *
      * @param mediaId The value for a URI uniquely identifying a piece of content
