@@ -198,13 +198,24 @@ void JsonRpcService::OnMessageReceived(WebSocketConnection *connection, const st
     LOG(LOG_INFO, "Message received: connection=%d, text=%s", connection->Id(), text.c_str());
     // Parse request
     Json::Value obj;
-    Json::Reader reader;
     JsonRpcStatus status = JsonRpcStatus::UNKNOWN;
 
+#if JSONCPP_VERSION_HEXA > 0x01080200
+    Json::CharReaderBuilder builder = {};
+    auto reader = std::unique_ptr<Json::CharReader>(builder.newCharReader());
+    std::string err;
+    if (!reader->parse(text.c_str(), text.c_str() + text.length(), &obj, &err))
+    {
+        //LOG(LOG_ERROR, "Json parsing failed: %s", err.c_str());
+        status = JsonRpcStatus::PARSE_ERROR;
+    }
+#else
+    Json::Reader reader;
     if (!reader.parse(text, obj))
     {
         status = JsonRpcStatus::PARSE_ERROR;
     }
+#endif
 
     if (status == JsonRpcStatus::UNKNOWN &&
         (!HasParam(obj, "jsonrpc", Json::stringValue) || obj["jsonrpc"] != "2.0"))
@@ -1455,8 +1466,13 @@ void JsonRpcService::RegisterMethod(const std::string &name, JsonRpcMethod metho
 void JsonRpcService::SendJsonMessageToClient(int connectionId,
     const Json::Value &jsonResponse)
 {
+#if JSONCPP_VERSION_HEXA > 0x01080200
+    Json::StreamWriterBuilder builder;
+    std::string message = Json::writeString(builder, jsonResponse);
+#else
     Json::FastWriter writer;
     std::string message = writer.write(jsonResponse);
+#endif
     std::lock_guard<std::recursive_mutex> lockGuard(mConnectionsMutex);
     WebSocketConnection *connection = GetConnection(connectionId);
     if (connection != nullptr)
