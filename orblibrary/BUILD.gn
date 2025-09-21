@@ -116,12 +116,17 @@ config("util_lib_config") {
 
 executable("test_orb_moderator")
 {
-  sources = [ "test/moderator_unittest.cpp"]
+  sources = [
+    "test/moderator_unittest.cpp",
+    "test/MockOrbBrowser.h",
+  ]
 
   deps = [
     "//testing/gtest",
     "//testing/gtest:gtest_main",
-    ":orb"
+    "//third_party/jsoncpp",
+    ":orb",
+    ":orb_util",
   ]
 
   testonly = true
