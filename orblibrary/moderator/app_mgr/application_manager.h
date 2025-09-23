@@ -29,12 +29,14 @@
 #include <mutex>
 #include <unordered_map>
 
+
 #include "utils.h"
 #include "ait.h"
-#include "hbbtv_app.h"
-#include "opapp.h"
 #include "application_session_callback.h"
 #include "OrbConstants.h"
+#include "base_app.h"
+#include "hbbtv_app.h"
+#include "opapp.h"
 
 namespace orb
 {
@@ -87,7 +89,7 @@ public:
     /**
      * Create and run a new application. If called by an application, check it is allowed.
      *
-     * @param callingAppId The calling app ID or INVALID_APP_ID if not called by an app.
+     * @param callingAppId The calling app ID or INVALID_APP_TYPE if not called by an app.
      * @param url A HTTP/HTTPS or DVB URL.
      * @param runAsOpApp Whether the newly created app will be launched as an OpApp.
      *
@@ -97,7 +99,7 @@ public:
      * will result in the signalled URL being loaded, which may be HTTP/HTTPS for broadband or DVB
      * for carousel.
      *
-     * @return The id of the newly created application. In case of failure, INVALID_APP_ID is returned.
+     * @return The id of the newly created application. In case of failure, INVALID_APP_TYPE is returned.
      */
     int CreateApplication(int callingAppId, const std::string &url, bool runAsOpApp);
 
@@ -176,7 +178,7 @@ public:
      * @param isDvbi true when the caller a DVB-I application.
      * @param scheme The linked application scheme.
      *
-     * @return The id of the newly created application. In case of failure, INVALID_APP_ID is returned.
+     * @return The id of the newly created application. In case of failure, INVALID_APP_TYPE is returned.
      */
     int ProcessXmlAit(const std::string &xmlAit, const bool isDvbi = false,
         const std::string &scheme = LINKED_APP_SCHEME_1_1);
@@ -304,7 +306,7 @@ private:
      * @param runAsOpApp When true, the newly created app will be lauched as an OpApp,
      *      otherwise as an HbbTVApp.
      *
-     * @return The id of the application. In case of failure, INVALID_APP_ID is returned.
+     * @return The id of the application. In case of failure, INVALID_APP_TYPE is returned.
      */
     int CreateAndRunApp(std::string url, bool runAsOpApp = false);
 
@@ -319,7 +321,7 @@ private:
      * @param runAsOpApp When true, the newly created app will be lauched as an OpApp,
      *      otherwise as an HbbTVApp.
      *
-     * @return The id of the application. In case of failure, INVALID_APP_ID is returned.
+     * @return The id of the application. In case of failure, INVALID_APP_TYPE is returned.
      */
     int CreateAndRunApp(const Ait::S_AIT_APP_DESC &desc,
         const std::string &urlParams,
@@ -328,13 +330,22 @@ private:
         bool runAsOpApp = false);
 
     /**
-     * Run the app.
+     * Run a HbbTV app.
      *
      * @param app The app to run.
      *
-     * @return The id of the application. In case of failure, INVALID_APP_ID is returned.
+     * @return The id of the application. In case of failure, INVALID_APP_TYPE is returned.
      */
-    int RunApp(std::unique_ptr<HbbTVApp> app);
+    int RunHbbTVApp(std::unique_ptr<HbbTVApp> app);
+
+    /**
+     * Run an OpApp.
+     *
+     * @param app The app to run.
+     *
+     * @return The id of the application. In case of failure, INVALID_APP_TYPE is returned.
+     */
+    int RunOpApp(std::unique_ptr<OpApp> app);
 
     /**
      * Update the running app.
@@ -392,9 +403,8 @@ private:
     int m_cif; // current app type interface
 
     Ait m_ait;
-    std::unordered_map<int, std::unique_ptr<HbbTVApp>> m_apps;
-    int m_hbbtvAppId = INVALID_APP_ID;
-    int m_opAppId = INVALID_APP_ID;
+    std::unique_ptr<HbbTVApp> m_hbbtvApp;
+    std::unique_ptr<OpApp> m_opApp;
     Utils::S_DVB_TRIPLET m_currentService = Utils::MakeInvalidDvbTriplet();
     Utils::S_DVB_TRIPLET m_previousService = Utils::MakeInvalidDvbTriplet();
     uint16_t m_currentServiceReceivedFirstAit = false;

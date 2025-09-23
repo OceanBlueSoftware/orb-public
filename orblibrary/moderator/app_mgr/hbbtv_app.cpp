@@ -54,9 +54,6 @@
 
 namespace orb
 {
-
-static int g_id = INVALID_APP_ID;
-
 static std::string getAppSchemeFromUrlParams(const std::string &urlParams);
 static std::string getUrlParamsFromAppScheme(const std::string &scheme);
 
@@ -80,7 +77,7 @@ static bool IsKeyScroll(const uint16_t &code);
  * @throws std::runtime_error
  */
 HbbTVApp::HbbTVApp(const std::string &url, ApplicationSessionCallback *sessionCallback)
-    : loadedUrl(url), m_entryUrl(url), m_baseUrl(url), m_sessionCallback(sessionCallback), m_id(++g_id)
+    : BaseApp(HBBTV_APP_TYPE, url, sessionCallback)
 {
     m_scheme = getAppSchemeFromUrlParams(url);
 }
@@ -93,15 +90,13 @@ HbbTVApp::HbbTVApp(const Utils::S_DVB_TRIPLET currentService,
     bool isBroadcast,
     bool isTrusted,
     ApplicationSessionCallback *sessionCallback)
-        : m_service(currentService),
+        : BaseApp(HBBTV_APP_TYPE, sessionCallback),
+        m_service(currentService),
         m_isTrusted(isTrusted),
         m_isBroadcast(isBroadcast),
-        m_versionMinor(INT8_MAX),
-        m_sessionCallback(sessionCallback),
-        m_id(++g_id)
+        m_versionMinor(INT8_MAX)
 {
-    // Broadcast-related applications need to call show.
-    m_state = isBroadcast ? BACKGROUND_STATE : FOREGROUND_STATE;
+    // HbbTV apps don't need state management
 }
 
 /**
@@ -113,7 +108,7 @@ void HbbTVApp::SetUrl(const Ait::S_AIT_APP_DESC &desc,
 {
     m_baseUrl = Ait::ExtractBaseURL(desc, m_service, isNetworkAvailable);
     m_entryUrl = Utils::MergeUrlParams(m_baseUrl, desc.location, urlParams);
-    loadedUrl = m_entryUrl;
+    m_loadedUrl = m_entryUrl;
 }
 
 /**
@@ -132,7 +127,7 @@ bool HbbTVApp::Update(const Ait::S_AIT_APP_DESC &desc, bool isNetworkAvailable)
 {
     if (!IsAllowedByParentalControl(desc))
     {
-        LOG(LOG_ERROR, "App with loaded url '%s' is not allowed by Parental Control.", loadedUrl.c_str());
+        LOG(LOG_ERROR, "App with loaded url '%s' is not allowed by Parental Control.", m_loadedUrl.c_str());
         return false;
     }
     m_protocolId = Ait::ExtractProtocolId(desc, isNetworkAvailable);
@@ -164,15 +159,17 @@ bool HbbTVApp::Update(const Ait::S_AIT_APP_DESC &desc, bool isNetworkAvailable)
     {
         size_t index = desc.scheme.find('?');
         m_scheme = m_scheme.substr(0, index);
-        loadedUrl = Utils::MergeUrlParams("", loadedUrl,
+        m_loadedUrl = Utils::MergeUrlParams("", m_loadedUrl,
                                              getUrlParamsFromAppScheme(GetScheme()));
         if (index != std::string::npos) {
             std::string llocParams = desc.scheme.substr(index);
-            loadedUrl = Utils::MergeUrlParams("", m_entryUrl, llocParams);
+            m_loadedUrl = Utils::MergeUrlParams("", m_entryUrl, llocParams);
         }
     }
-    LOG(LOG_DEBUG, "App[%d] properties: orgId=%d, controlCode=%d, protocolId=%d, baseUrl=%s, entryUrl=%s, loadedUrl=%s",
-            m_aitDesc.appId, m_aitDesc.orgId, m_aitDesc.controlCode, m_protocolId, m_baseUrl.c_str(), m_entryUrl.c_str(), loadedUrl.c_str());
+    LOG(LOG_DEBUG,
+        "App[%d] properties: orgId=%d, controlCode=%d, protocolId=%d, baseUrl=%s, entryUrl=%s, loadedUrl=%s",
+            m_aitDesc.appId, m_aitDesc.orgId, m_aitDesc.controlCode,
+            m_protocolId, m_baseUrl.c_str(), m_entryUrl.c_str(), m_loadedUrl.c_str());
 
     m_sessionCallback->DispatchApplicationSchemeUpdatedEvent(GetId(), m_scheme);
     return true;
@@ -194,7 +191,7 @@ bool HbbTVApp::TransitionToBroadcastRelated()
             LOG(LOG_INFO, "Cannot transition to broadcast (entry URL is not in boundaries)");
             return false;
         }
-        if (!Utils::CheckBoundaries(loadedUrl, m_baseUrl, m_aitDesc.boundaries))
+        if (!Utils::CheckBoundaries(m_loadedUrl, m_baseUrl, m_aitDesc.boundaries))
         {
             LOG(LOG_INFO, "Cannot transition to broadcast (loaded URL is not in boundaries)");
             return false;
@@ -291,36 +288,6 @@ bool HbbTVApp::InKeySet(uint16_t keyCode)
     return false;
 }
 
-/**
- * Set the application state.
- *
- * @param state The desired state to transition to.
- * @returns true if transitioned successfully to the desired state, false otherwise.
- */
-bool HbbTVApp::SetState(const E_APP_STATE &state)
-{
-    // HbbTV apps can go only to background or foreground state
-    if (state == BACKGROUND_STATE || state == FOREGROUND_STATE)
-    {
-        if (state != m_state)
-        {
-            LOG(LOG_INFO, "AppId %u; state transition: %d -> %d", m_id, m_state, state);
-            m_state = state;
-            if (state == BACKGROUND_STATE)
-            {
-                m_sessionCallback->HideApplication(GetId());
-            }
-            else
-            {
-                m_sessionCallback->ShowApplication(GetId());
-            }
-        }
-        return true;
-    }
-    LOG(LOG_INFO, "Invalid state transition: %d -> %d", m_state, state);
-    return false;
-}
-
 bool HbbTVApp::IsAllowedByParentalControl(const Ait::S_AIT_APP_DESC &desc) const
 {
     /* Note: XML AIt uses the alpha-2 region codes as defined in ISO 3166-1.
@@ -334,7 +301,7 @@ bool HbbTVApp::IsAllowedByParentalControl(const Ait::S_AIT_APP_DESC &desc) const
         parental_control_region, parental_control_region3))
     {
         LOG(LOG_INFO, "%s, Parental Control Age RESTRICTED for %s: only %d content accepted",
-            loadedUrl.c_str(), parental_control_region.c_str(), parental_control_age);
+            m_loadedUrl.c_str(), parental_control_region.c_str(), parental_control_age);
         return false;
     }
     return true;

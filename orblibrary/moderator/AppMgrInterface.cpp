@@ -21,6 +21,7 @@
 #include <json/json.h>
 
 #include "AppMgrInterface.hpp"
+#include "app_mgr/base_app.h"
 #include "app_mgr/application_manager.h"
 #include "JsonUtil.h"
 #include "log.hpp"
@@ -79,7 +80,7 @@ string AppMgrInterface::executeRequest(string method, Json::Value token, Json::V
         int newAppId = appMgr.CreateApplication(
           appId, JsonUtil::getStringValue(params, "url"), JsonUtil::getBoolValue(params, "runAsOpApp"));
 
-        if (newAppId == INVALID_APP_ID)
+        if (newAppId == BaseApp::INVALID_APP_TYPE)
         {
           LOGE("Failed to create application with ID " << appId);
           response = buildJsonResponse("Failed to create application with ID " + std::to_string(appId));
