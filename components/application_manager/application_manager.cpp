@@ -669,7 +669,7 @@ void ApplicationManager::OnBroadcastStopped()
 void ApplicationManager::OnChannelChanged(uint16_t originalNetworkId,
     uint16_t transportStreamId, uint16_t serviceId)
 {
-    LOG(LOG_DEBUG, "OnChannelChanged (current service: %d)", m_currentService.serviceId);
+    LOG(LOG_DEBUG, "OnChannelChanged (current serviceId: %u, new serviceId %u)", m_currentService.serviceId, serviceId);
     std::lock_guard<std::recursive_mutex> lock(m_lock);
     m_currentServiceReceivedFirstAit = false;
     m_currentServiceAitPid = 0;
