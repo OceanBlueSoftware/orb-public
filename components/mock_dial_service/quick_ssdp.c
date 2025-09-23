@@ -331,7 +331,7 @@ void run_ssdp(int port, const char *pFriendlyName, const char * pModelName, cons
     //pthread_mutex_lock(mutex);
     stop_flag = 0;
     ctx = mg_start(&request_handler, NULL, rand() % 40000 + 10000);
-    pthread_mutex_unlock(mutex);
+    //pthread_mutex_unlock(mutex);
 
     if (ctx == NULL) {
         LOG(LOG_DEBUG,"quick_ssdp: Unable to start SSDP master listening thread.");
