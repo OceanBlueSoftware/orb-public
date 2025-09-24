@@ -91,7 +91,7 @@ private:
 class OpAppPackageManagerTest : public ::testing::Test {
 
 public:
-  static constexpr std::string PACKAGE_PATH = "test/packages";
+  inline static std::string PACKAGE_PATH = "test/packages";
 
 protected:
   void SetUp() override {
