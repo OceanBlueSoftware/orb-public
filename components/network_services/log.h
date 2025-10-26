@@ -30,6 +30,8 @@
 #define LOGI(args ...) __android_log_print(LOG_INFO, LOG_TAG, args);
 #define LOGD(args ...) __android_log_print(LOG_DEBUG, LOG_TAG, args);
 #define ASSERT(condition) assert(condition)
+#define DBGLOG(x, ...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, "%s:%u " x "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__);
+#define ERRLOG(x, ...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "%s:%u " x "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__);
 #else
 #define LOG_ERROR 0
 #define LOG_INFO 1
@@ -39,6 +41,8 @@
 #define LOGI(args ...)
 #define LOGD(args ...)
 #define ASSERT(condition)
+#define DBGLOG(x, ...)
+#define ERRLOG(x, ...)
 #endif
 #endif // __MANAGER_LOG_H
 
