@@ -4,9 +4,10 @@
  * Licensed under the ORB License that can be found in the LICENSE file at
  * the top level of this repository.
  */
+#define LOG_TAG "JsonRpcService"
 
 #include "JsonRpcService.h"
-#include "log.h"
+#include "../log.h"
 
 #include <iostream>
 #include <sstream>
@@ -178,6 +179,7 @@ JsonRpcService::JsonRpcService(
     RegisterMethod(MD_INTENT_PLAYBACK, &JsonRpcService::ReceiveIntentConfirm);
 
     RegisterSupportedMethods();
+    DBGLOG("created JsonRpcService: endpoint: %s", endpoint.c_str())
 }
 
 bool JsonRpcService::OnConnection(WebSocketConnection *connection)
@@ -1478,6 +1480,7 @@ void JsonRpcService::SendJsonMessageToClient(int connectionId,
     WebSocketConnection *connection = GetConnection(connectionId);
     if (connection != nullptr)
     {
+        DBGLOG(" cxn: %d, msg:%s", connectionId, message.c_str())
         std::ostringstream oss;
         oss << message;
         connection->SendMessage(oss.str());
