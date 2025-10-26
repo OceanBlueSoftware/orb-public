@@ -119,7 +119,7 @@ class BrowserView extends WebView {
                 }
                 return mWebResourceClient.shouldInterceptRequest(request, mAppId);
             }
-            
+
             @Override
             public void onPageCommitVisible(WebView view, String url) {
                 mVisibilityOverride = true;
@@ -172,20 +172,25 @@ class BrowserView extends WebView {
         int androidKeyCode = event.getKeyCode();
         int keyCode = mSessionCallback.getTvBrowserKeyCode(androidKeyCode);
         if (!mSessionCallback.inApplicationKeySet(mAppId, keyCode)) {
-            Log.d(TAG, "Key press event {" + androidKeyCode + "} is not supported in app");
+            Log.d(TAG, "KeyCode (" + keyCode + "), Key press event {" + androidKeyCode + "} is not supported in app");
             return false;
         }
         int action = event.getAction();
         if (action == KeyEvent.ACTION_DOWN) {
             if (isKeyMappedByWebView(androidKeyCode)) {
+                Log.d(TAG, "Key event {" + androidKeyCode + "} is mapped by WebView");
                 return super.dispatchKeyEvent(event);
             }
+            Log.d(TAG, "KeyCode (" + keyCode + ") DOWN dispatch");
             dispatchJavaScriptKeyEvent("keydown", keyCode);
         } else if (action == KeyEvent.ACTION_UP) {
+            Log.d(TAG, "KeyCode (" + keyCode + ") Press dispatch");
             dispatchJavaScriptKeyEvent("keypress", keyCode);
             if (isKeyMappedByWebView(androidKeyCode)) {
+                Log.d(TAG, "Key event {" + androidKeyCode + "} is mapped by WebView");
                 return super.dispatchKeyEvent(event);
             }
+            Log.d(TAG, "KeyCode (" + keyCode + ") UP dispatch");
             dispatchJavaScriptKeyEvent("keyup", keyCode);
         }
         return true;
