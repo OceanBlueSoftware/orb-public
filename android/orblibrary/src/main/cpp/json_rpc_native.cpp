@@ -16,6 +16,7 @@
 
 #include "jni_utils.h"
 
+#define DBGLOG(x, ...) __android_log_print(ANDROID_LOG_DEBUG, "Orb/JsonRpc", "%s:%u " x "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__);
 
 #define CB_REQUEST_NEGOTIATE_METHODS 0
 #define CB_REQUEST_SUBSCRIBE_UNSUBSCRIBE 1
@@ -310,8 +311,10 @@ JNIEXPORT void JNICALL Java_org_orbtv_orblibrary_JsonRpc_nativeOpen(
     auto *service = new NetworkServices::JsonRpcService(
         port, JniUtils::MakeStdString(env, endpoint),
         std::move(sessionCallback));
+    DBGLOG("%p new", service)
     service->Start();
     env->SetLongField(object, g_service, jlong(service));
+    DBGLOG("%p started", service)
 }
 
 extern "C"
@@ -319,6 +322,7 @@ JNIEXPORT void JNICALL Java_org_orbtv_orblibrary_JsonRpc_nativeClose(
     JNIEnv *env,
     jobject object)
 {
+    DBGLOG("%p", GetService(env, object))
     delete GetService(env, object);
 }
 
