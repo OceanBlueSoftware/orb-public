@@ -111,7 +111,7 @@ hbbtv.objects.Channel = (function() {
         privates.set(this, {});
         const p = privates.get(this);
         p.channelData = channelData; // Hold reference to caller's object
-        if (channelData.serviceInstances) {
+        if (channelData && channelData.serviceInstances) {
             for (const instance of channelData.serviceInstances) {
                 instance.parentService = this;
             }
