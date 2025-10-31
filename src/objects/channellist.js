@@ -45,7 +45,11 @@ hbbtv.objects.ChannelList = (function() {
                     (channel.ipBroadcastID && channel.ipBroadcastID === channelID);
             })
             .pop();
-        return hbbtv.objects.createChannel(channelData);
+        if (channelData) {
+            return hbbtv.objects.createChannel(channelData);
+        }
+        console.warn('[ChannelList.getChannel] No channel found for channelID:', channelID);
+        return null;
     };
 
     prototype.getChannelByTriplet = function(onid, tsid, sid, nid) {
