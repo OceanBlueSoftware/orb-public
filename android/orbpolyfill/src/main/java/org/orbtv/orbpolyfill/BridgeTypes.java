@@ -139,6 +139,7 @@ public class BridgeTypes {
         public static final int ID_DVB_T2 = 16;
         public static final int ID_DVB_I = 50;
         public static final int ID_DVB_DASH = 51;
+        public static final int ID_OTHER = 52;
         public static final int ID_ISDB_C = 20;
         public static final int ID_ISDB_S = 21;
         public static final int ID_ISDB_T = 22;

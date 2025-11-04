@@ -41,6 +41,7 @@ hbbtv.objects.Channel = (function() {
         ID_IPTV_URI: 41,
         ID_DVB_I: 50,
         ID_DVB_DASH: 51,
+        ID_OTHER: 52,
     });
 
     hbbtv.utils.defineGetterProperties(prototype, {
