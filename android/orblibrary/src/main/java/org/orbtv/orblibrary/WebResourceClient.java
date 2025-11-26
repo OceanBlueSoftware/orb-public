@@ -69,6 +69,9 @@ abstract class WebResourceClient {
                 .followRedirects(false)
                 .followSslRedirects(false)
                 .protocols(protocols)
+                .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .writeTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
                 .build();
         mHttpSandboxClient = new OkHttpClient();
         mDoNotTrackEnabled = doNotTrackEnabled;
@@ -101,13 +104,25 @@ abstract class WebResourceClient {
     private WebResourceResponse shouldInterceptHttpRequest(WebResourceRequest request, int appId) {
         WebResourceResponse response = null;
         try {
+            Log.d(TAG, "Attempting to handle HTTP request: " + request.getUrl());
             response = handleHttpRequest(request, appId);
+            if (response != null) {
+                Log.d(TAG, "HTTP request succeeded: " + request.getUrl());
+            } else {
+                Log.w(TAG, "HTTP request returned null response: " + request.getUrl());
+            }
         } catch (IOException e) {
+            Log.e(TAG, "IOException handling HTTP request: " + request.getUrl(), e);
+            e.printStackTrace();
+        } catch (Exception e) {
+            Log.e(TAG, "Unexpected exception handling HTTP request: " + request.getUrl(), e);
             e.printStackTrace();
         }
         if (response == null) {
+            Log.w(TAG, "Calling onRequestFailed for: " + request.getUrl());
             onRequestFailed(request, appId);
         } else {
+            Log.d(TAG, "Calling onRequestSucceeded for: " + request.getUrl());
             onRequestSucceeded(request, appId);
         }
         return response;
@@ -132,12 +147,14 @@ abstract class WebResourceClient {
             requestHeaders.put("DNT", "1");
         }
 
+        Log.d(TAG, "Executing HTTP request to: " + url);
         Response httpResponse = mHttpClient.newCall(new Request.Builder()
                 .url(url)
                 .method(request.getMethod(), null)
                 .headers(Headers.of(requestHeaders))
                 .build()).execute();
 
+        Log.d(TAG, "HTTP response received: " + url + " - Status: " + httpResponse.code());
         boolean isRedirect = (httpResponse.code() >= 301 && httpResponse.code() <= 308);
 
         // Response
@@ -174,12 +191,17 @@ abstract class WebResourceClient {
 
         ResponseBody body = httpResponse.body();
         if (body == null) {
+            Log.w(TAG, "HTTP response body is null for: " + url);
             return null;
         }
+        long contentLength = body.contentLength();
+        Log.d(TAG, "Response body size for " + url + ": " + contentLength + " bytes, MIME type: " + mimeType);
         InputStream responseStream;
         if (HBBTV_MIME_TYPES.contains(mimeType.toLowerCase())) {
+            Log.d(TAG, "Creating injection response stream for HBBTV MIME type: " + url);
             responseStream = createInjectionResponseStream(body.byteStream(), body, charset, request.getUrl(), appId);
         } else {
+            Log.d(TAG, "Creating standard response stream for: " + url);
             responseStream = createResponseStream(body.byteStream(), body);
         }
 
