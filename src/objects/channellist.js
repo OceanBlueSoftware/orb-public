@@ -39,6 +39,16 @@ hbbtv.objects.ChannelList = (function() {
 
     prototype.getChannel = function(channelID) {
         const p = privates.get(this);
+        
+        // Debug: Log what we're searching for and what's available
+        console.log('[ChannelList.getChannel] Searching for channelID:', channelID);
+        const channelInfo = [];
+        for (let i = 0; i < p.channelDataList.length; i++) {
+            const ch = p.channelDataList[i];
+            channelInfo.push('Channel ' + i + ': ccid="' + (ch.ccid || '') + '", ipBroadcastID="' + (ch.ipBroadcastID || '') + '", name="' + (ch.name || '') + '"');
+        }
+        console.log('[ChannelList.getChannel] Available channels (' + p.channelDataList.length + '):', channelInfo.join('; '));
+        
         const channelData = p.channelDataList
             .filter((channel) => {
                 return (channel.ccid && channel.ccid === channelID) ||
@@ -46,6 +56,11 @@ hbbtv.objects.ChannelList = (function() {
             })
             .pop();
         if (channelData) {
+            console.log('[ChannelList.getChannel] Found channel:', {
+                ccid: channelData.ccid,
+                ipBroadcastID: channelData.ipBroadcastID,
+                name: channelData.name
+            });
             return hbbtv.objects.createChannel(channelData);
         }
         console.warn('[ChannelList.getChannel] No channel found for channelID:', channelID);
