@@ -69,6 +69,9 @@ abstract class WebResourceClient {
                 .followRedirects(false)
                 .followSslRedirects(false)
                 .protocols(protocols)
+                .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
+                .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                .writeTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
                 .build();
         mHttpSandboxClient = new OkHttpClient();
         mDoNotTrackEnabled = doNotTrackEnabled;
@@ -79,7 +82,7 @@ abstract class WebResourceClient {
     }
 
     public WebResourceResponse shouldInterceptRequest(WebResourceRequest request, int appId) {
-        Log.d(TAG, "Should intercept?: " + request.getUrl());
+        //Log.d(TAG, "Should intercept?: " + request.getUrl());
         Uri url = request.getUrl();
         String scheme = url.getScheme();
         if (request.getMethod().equalsIgnoreCase("GET")) {
@@ -103,9 +106,14 @@ abstract class WebResourceClient {
         try {
             response = handleHttpRequest(request, appId);
         } catch (IOException e) {
+            Log.e(TAG, "IOException handling HTTP request: " + request.getUrl(), e);
+            e.printStackTrace();
+        } catch (Exception e) {
+            Log.e(TAG, "Unexpected exception handling HTTP request: " + request.getUrl(), e);
             e.printStackTrace();
         }
         if (response == null) {
+            Log.w(TAG, "Calling onRequestFailed for: " + request.getUrl());
             onRequestFailed(request, appId);
         } else {
             onRequestSucceeded(request, appId);
@@ -138,6 +146,7 @@ abstract class WebResourceClient {
                 .headers(Headers.of(requestHeaders))
                 .build()).execute();
 
+        Log.d(TAG, "HTTP response code: " + httpResponse.code() + ", for URL: " + url);
         boolean isRedirect = (httpResponse.code() >= 301 && httpResponse.code() <= 308);
 
         // Response
@@ -174,10 +183,14 @@ abstract class WebResourceClient {
 
         ResponseBody body = httpResponse.body();
         if (body == null) {
+            Log.w(TAG, "HTTP response body is null for: " + url);
             return null;
         }
+        long contentLength = body.contentLength();
+        Log.d(TAG, "Response body size for " + url + ": " + contentLength + " bytes, MIME type: " + mimeType);
         InputStream responseStream;
         if (HBBTV_MIME_TYPES.contains(mimeType.toLowerCase())) {
+            //Log.d(TAG, "Creating injection response stream for HBBTV MIME type: " + url);
             responseStream = createInjectionResponseStream(body.byteStream(), body, charset, request.getUrl(), appId);
         } else {
             responseStream = createResponseStream(body.byteStream(), body);
