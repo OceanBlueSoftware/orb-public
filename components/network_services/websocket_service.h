@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef OBS_NS_WEBSOCKET_SERVICE_
-#define OBS_NS_WEBSOCKET_SERVICE_
+#ifndef OBS_NS_WEBSOCKET_SERVICE_H
+#define OBS_NS_WEBSOCKET_SERVICE_H
 
 #include "service_manager.h"
 
@@ -27,6 +27,14 @@
 #include <libwebsockets.h>
 
 namespace NetworkServices {
+
+const std::string VHOST_NAME = "localhost";
+const std::string SSL_CERT_FILEPATH = "todo.cert";
+const std::string SSL_PRIVATE_KEY_FILEPATH = "todo.key";
+constexpr int SECS_SINCE_VALID_PING = 3;
+constexpr int SECS_SINCE_VALID_HANGUP = 10;
+constexpr int RX_BUFFER_SIZE = 4096;
+
 class WebSocketService : public ServiceManager::Service {
 public:
     class WebSocketConnection
@@ -34,21 +42,23 @@ public:
         friend class WebSocketService;
 
 public:
+
+        WebSocketConnection(struct lws *wsi, const std::string &uri);
+
         std::string Uri() const
         {
-            return uri_;
+            return mUri;
         }
 
         int Id() const
         {
-            return id_;
+            return mId;
         }
 
         void SendMessage(const std::string &text);
         void SendFragment(std::vector<uint8_t> &&data, bool is_first, bool is_final, bool
             is_binary);
         void Close();
-        WebSocketConnection *paired_connection_;
 
 protected:
         struct FragmentWriteInfo
@@ -57,19 +67,17 @@ protected:
             std::vector<uint8_t> data;
             bool close;
         };
-
-        WebSocketConnection(struct lws *wsi, const std::string &uri);
-
-        struct lws *wsi_;
-        std::string uri_;
-        std::string text_buffer_;
-        std::queue<struct FragmentWriteInfo> write_queue_;
-        int id_;
-
         // Disallow copy and assign
         WebSocketConnection(const WebSocketConnection&) = delete;
         WebSocketConnection& operator=(const WebSocketConnection&) = delete;
-    };
+
+        struct lws* mWsi;
+        std::string mUri;
+        std::string mTextBuffer;
+        std::queue<struct FragmentWriteInfo> mWriteQueue;
+        int mId;
+
+    }; // class WebSocketConnection
 
     WebSocketService(const std::string &server_name, int port, bool use_ssl, const
         std::string &interface_name);
@@ -77,25 +85,15 @@ protected:
     virtual bool Start();
     virtual void Stop();
     virtual bool OnConnection(WebSocketConnection *connection) = 0;
+    virtual void OnDisconnected(WebSocketConnection *connection) = 0;
     virtual void OnFragmentReceived(WebSocketConnection *connection, std::vector<uint8_t> &&data,
         bool is_first, bool is_final, bool is_binary);
     virtual void OnMessageReceived(WebSocketConnection *connection, const std::string &text);
-    virtual void OnDisconnected(WebSocketConnection *connection) = 0;
 
 protected:
-    std::recursive_mutex connections_mutex_;
-    std::unordered_map<void *, std::unique_ptr<WebSocketConnection> > connections_;
-    WebSocketConnection* GetConnection(int id)
-    {
-        for (auto &connection : connections_)
-        {
-            if (connection.second->id_ == id)
-            {
-                return connection.second.get();
-            }
-        }
-        return nullptr;
-    }
+    std::recursive_mutex mConnectionsMutex;
+    std::unordered_map<void *, std::unique_ptr<WebSocketConnection> > mConnections;
+    WebSocketConnection* GetConnection(int id);
 
 private:
     static void* EnterMainLooper(void *instance);
@@ -107,16 +105,18 @@ private:
     struct lws_protocols Protocol(const char *protocol_name);
     std::string Header(struct lws *wsi, enum lws_token_indexes header);
 
-    bool stop_;
-    std::string protocol_name_;
+    bool mStop;
+    std::string mProtocolName;
+    bool mUseSSL;
+    std::string mInterfaceName;
+#if LWS_VERSION_4 == 1
     lws_retry_bo_t retry_;
-    struct lws_protocols protocols_[2];
-    struct lws_context_creation_info info_;
-    bool use_ssl_;
-    std::string interface_name_;
-    struct lws_context *context_;
+#endif
+    struct lws_protocols mProtocols[2];
+    struct lws_context_creation_info mContextInfo;
+    struct lws_context *mContext;
 };
 } // namespace NetworkServices
 
-#endif // OBS_NS_WEBSOCKET_SERVICE_
+#endif // OBS_NS_WEBSOCKET_SERVICE_H
 
